@@ -48,6 +48,9 @@ import PromoBannerPage from "./pages/landing_page/PromoBannerPage";
 import AdminUsersPage from "./pages/admin_panel/UserPage";
 import ChatPage from "./pages/chat/ChatPage";
 import { SocketProvider } from "./contexts/SocketContext";
+import NewsListingPage from "./pages/landing_page/NewsListingPage";
+import NewsDetailPage from "./pages/landing_page/NewsDetailPage";
+import NewsPage from "./pages/admin_panel/NewsPage";
 
 // ================= ROUTES =================
 function AppRoutes() {
@@ -74,6 +77,8 @@ function AppRoutes() {
         <Route path="/price-list" element={<PublicPricelistPage />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/promo/:id" element={<PromoBannerPage />} />
+        <Route path="/news" element={<NewsListingPage />} />
+        <Route path="/news/:slug" element={<NewsDetailPage />} />
 
         <Route path="/reset-password" element={<ResetPasswordPage />} />
 
@@ -112,6 +117,7 @@ function AppRoutes() {
           <Route path="tiktok" element={<TiktokPage />} />
           <Route path="orders" element={<OrderListPage />} />
           <Route path="users" element={<AdminUsersPage />} />
+          <Route path="news" element={<NewsPage />} />
         </Route>
       </Route>
 

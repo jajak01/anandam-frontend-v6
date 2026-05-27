@@ -38,6 +38,7 @@ export default function Sidebar() {
     { name: "Pricelist", path: "/ayamgoreng/admin-pricelist", icon: CirclePercent },
     { name: "Banner", path: "/ayamgoreng/banner", icon: Image },
     { name: "Sertifikat", path: "/ayamgoreng/certificate", icon: Award },
+    { name: "News", path: "/ayamgoreng/news", icon: FilePen },
     { name: "TikTok", path: "/ayamgoreng/tiktok", icon: FaTiktok }
   ];
 

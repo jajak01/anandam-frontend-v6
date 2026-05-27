@@ -73,6 +73,12 @@ export default function DesktopNavLinks({ groupings }: { groupings: Grouping[] }
                 {/* <BookOpen size={18} /> */}
                 Produk Katalog
               </div>
+              <div
+                onClick={() => { navigate("/news"); setOpen(false); }}
+                className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-primary cursor-pointer transition-colors"
+              >
+                Berita & Artikel
+              </div>
             </div>
 
             {/* GARIS PEMISAH */}
