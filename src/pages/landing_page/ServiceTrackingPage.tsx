@@ -373,7 +373,7 @@ export default function ServiceTrackingPage() {
         <div className="mt-8 text-center print:hidden">
           <p className="text-gray-400 text-sm">Butuh bantuan lebih lanjut? Hubungi layanan pelanggan kami</p>
           <a 
-            href="https://wa.me/6281228134747" 
+            href="https://wa.me/6285950544597" 
             target="_blank" 
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 mt-4 text-blue-600 font-bold hover:text-blue-700 transition-colors"
