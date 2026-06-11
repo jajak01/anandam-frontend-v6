@@ -13,6 +13,7 @@ export default function PromoProductSlider({ products, promoImageUrl, getImageUr
   const navigate = useNavigate();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
   
   // State untuk mengatur efek fade-out/fade-in banner secara real-time saat di-scroll
   const [bannerOpacity, setBannerOpacity] = useState(1);
@@ -80,7 +81,7 @@ export default function PromoProductSlider({ products, promoImageUrl, getImageUr
           onTouchStart={() => setIsHovered(true)}
           onTouchEnd={() => setIsHovered(false)}
           // Hapus touch-pan-x agar tidak memblokir scroll vertikal (ke bawah/atas) di HP
-          className="flex flex-row flex-nowrap items-stretch gap-3 p-3 overflow-x-auto scrollbar-hide bg-[#1A85D5] rounded-xl shadow-md"
+          className="flex flex-row flex-nowrap items-stretch gap-3 p-3 overflow-x-auto scrollbar-hide bg-[#2563EB] rounded-xl shadow-md"
         >
           
           {/* ================= SISI KIRI: BANNER PROMO ================= */}
@@ -92,14 +93,21 @@ export default function PromoProductSlider({ products, promoImageUrl, getImageUr
               /* Mengunci lebar banner agar presisi mirip gambar di mobile (w-[140px]) dan desktop (lg:w-[180px]) */
               w-[140px] lg:w-[180px] 
               transition-opacity duration-100 ease-out
+              relative
             "
           >
             {promoImageUrl && (
-              <img 
-                src={getImageUrl(promoImageUrl)} 
-                alt="Promo Banner" 
-                className="w-full h-auto object-contain select-none pointer-events-none"
-              />
+              <>
+                {!imageLoaded && (
+                  <div className="absolute inset-0 bg-white/20 animate-pulse rounded-lg" />
+                )}
+                <img 
+                  src={getImageUrl(promoImageUrl)} 
+                  alt="Promo Banner" 
+                  className={`w-full h-auto object-contain select-none pointer-events-none transition-opacity duration-300 ${imageLoaded ? "opacity-100" : "opacity-0"}`}
+                  onLoad={() => setImageLoaded(true)}
+                />
+              </>
             )}
           </div>
 

@@ -136,21 +136,32 @@ export default function LandingPage() {
   const [isHovered, setIsHovered] = useState(false);
   const isDragClickRef = useRef<boolean>(true);
 
+  // State untuk melacak apakah gambar banner sudah dimuat dari network
+  const [heroImagesLoaded, setHeroImagesLoaded] = useState<Record<string, boolean>>({});
+  const [promoImagesLoaded, setPromoImagesLoaded] = useState<Record<string, boolean>>({});
+
   // ==========================================
   // LOGIKA INFINITE CAROUSEL HERO BANNER
   // ==========================================
-  const [currentHero, setCurrentHero] = useState(1);
+  const [currentHero, setCurrentHero] = useState(0); // Start at 0, will be adjusted by useEffect
   const autoSlideRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (heroBanners.length > 1) {
+      setCurrentHero(1);
+    } else {
+      setCurrentHero(0);
+    }
+  }, [heroBanners.length]);
 
   const displayHeroBanners = useMemo(() => {
     if (heroBanners.length <= 1) return heroBanners;
     return [
-      heroBanners[heroBanners.length - 1], 
+      heroBanners[heroBanners.length - 1],
       ...heroBanners,
-      heroBanners[0]       
+      heroBanners[0]
     ];
   }, [heroBanners]);
-
   const [isTransitioning, setIsTransitioning] = useState(true);
 
   const activeBannerIdx = useMemo(() => {
@@ -222,9 +233,17 @@ export default function LandingPage() {
   // ==========================================
   // LOGIKA CAROUSEL PROMO BANNER (INFINITE LOOP)
   // ==========================================
-  const [currentPromo, setCurrentPromo] = useState(1);
+  const [currentPromo, setCurrentPromo] = useState(0); // Start at 0, will be adjusted by useEffect
   const [isPromoTransitioning, setIsPromoTransitioning] = useState(true);
   const autoPromoRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (promoBanners.length > 1) {
+      setCurrentPromo(1);
+    } else {
+      setCurrentPromo(0);
+    }
+  }, [promoBanners.length]);
 
   const displayPromoBanners = useMemo(() => {
     if (promoBanners.length <= 1) return promoBanners;
@@ -237,6 +256,7 @@ export default function LandingPage() {
 
   const activePromoIdx = useMemo(() => {
     if (promoBanners.length === 0) return 0;
+    if (promoBanners.length === 1) return 0;
     let idx = currentPromo - 1;
     if (currentPromo === 0) {
       idx = promoBanners.length - 1;
@@ -640,11 +660,15 @@ export default function LandingPage() {
                                 }
                               `}
                             >
+                              {!heroImagesLoaded[`${banner.id}-${i}`] && (
+                                <div className="absolute inset-0 bg-gray-200 animate-pulse rounded-2xl md:rounded-3xl" />
+                              )}
                               <img
                                 src={getImageUrl(banner.image_url)}
-                                className="w-full h-full object-cover pointer-events-none"
+                                className={`w-full h-full object-cover pointer-events-none transition-opacity duration-300 ${heroImagesLoaded[`${banner.id}-${i}`] ? "opacity-100" : "opacity-0"}`}
                                 alt={banner.title || "Hero Banner"}
                                 draggable={false}
+                                onLoad={() => setHeroImagesLoaded(prev => ({ ...prev, [`${banner.id}-${i}`]: true }))}
                               />
                             </div>
                           </div>
@@ -742,13 +766,17 @@ export default function LandingPage() {
                                 key={`${banner.id}-${i}`}
                                 onClick={() => navigate(`/promo/${banner.id || 'special'}`)}
                                 // 🟢 PERUBAHAN UTAMA: Hapus aspect-[8/1], gunakan w-full flex-shrink-0
-                                className="w-full flex-shrink-0 cursor-pointer hover:opacity-95 transition-opacity flex justify-center items-center"
+                                className="w-full flex-shrink-0 cursor-pointer hover:opacity-95 transition-opacity flex justify-center items-center relative min-h-[50px]"
                             >
+                                {!promoImagesLoaded[`${banner.id}-${i}`] && (
+                                    <div className="absolute inset-0 bg-gray-200 animate-pulse rounded-xl" />
+                                )}
                                 <img
                                     src={getImageUrl(banner.image_url)}
-                                    className="w-full h-auto object-contain select-none pointer-events-none block"
+                                    className={`w-full h-auto object-contain select-none pointer-events-none block transition-opacity duration-300 ${promoImagesLoaded[`${banner.id}-${i}`] ? "opacity-100" : "opacity-0"}`}
                                     alt="Banner Promo"
                                     draggable={false}
+                                    onLoad={() => setPromoImagesLoaded(prev => ({ ...prev, [`${banner.id}-${i}`]: true }))}
                                 />
                             </div>
                         ))}

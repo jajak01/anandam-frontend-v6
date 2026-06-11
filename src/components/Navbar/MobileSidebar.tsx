@@ -62,7 +62,7 @@ export default function MobileSidebar({ isOpen, onClose, groupings }: MobileSide
         <div className="flex items-center justify-between p-5 border-b bg-gray-50/50 shrink-0">
           <div className="flex items-center gap-3 text-primary">
             <LayoutGrid size={22} />
-            <span className="font-bold text-gray-900 text-lg">Kategori Produk</span>
+            <span className="font-bold text-gray-900 text-lg">Menu & Kategori</span>
           </div>
           <button 
             onClick={onClose}
@@ -74,6 +74,27 @@ export default function MobileSidebar({ isOpen, onClose, groupings }: MobileSide
 
         {/* Categories List */}
         <div className="flex-1 overflow-y-auto custom-scrollbar p-3">
+          {/* Main Menu Items */}
+          <div className="flex flex-col gap-1 mb-4 pb-4 border-b">
+            <div 
+              onClick={() => navTo("/company-profile")}
+              className="flex items-center gap-3 py-3.5 px-4 rounded-xl text-gray-700 font-bold hover:bg-gray-50 cursor-pointer"
+            >
+              <span className="text-sm">Tentang Kami</span>
+            </div>
+            <div 
+              onClick={() => navTo("/products")}
+              className="flex items-center gap-3 py-3.5 px-4 rounded-xl text-gray-700 font-bold hover:bg-gray-50 cursor-pointer"
+            >
+              <span className="text-sm">Produk Katalog</span>
+            </div>
+            <div 
+              onClick={() => navTo("/track/servis")}
+              className="flex items-center gap-3 py-3.5 px-4 rounded-xl text-primary font-black bg-blue-50 border border-blue-100 hover:bg-blue-100 cursor-pointer"
+            >
+              <span className="text-sm">Lacak Servis</span>
+            </div>
+          </div>
           {groupings.map((group) => {
             const hasChildren = group.children && group.children.length > 0;
             const isGroupOpen = expandedGroups.includes(group.id);

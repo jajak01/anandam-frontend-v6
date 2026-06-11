@@ -27,6 +27,9 @@ export default function PromoBannerPage() {
     const [categoryIds, setCategoryIds] = useState<string>("");
     const [isMasterLoaded, setIsMasterLoaded] = useState(false);
 
+    // State untuk melacak apakah gambar banner sudah dimuat dari network
+    const [imageLoaded, setImageLoaded] = useState(false);
+
     const scrollPositionRef = useRef(0);
     const shouldRestoreScroll = useRef(false);
 
@@ -145,17 +148,21 @@ export default function PromoBannerPage() {
             <section className="w-full bg-white pt-4 pb-8">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6">
                     {loadingBanner ? (
-                        // Skeleton sementara saat loading (pakai rasio standar agar tidak kolaps)
+                        // Skeleton sementara saat loading metadata
                         <div className={`${widthClass} aspect-[4/1] bg-gray-200 animate-pulse rounded-xl`} />
                     ) : banner ? (
                         // Container tidak lagi dikunci rasionya
-                        <div className={`relative overflow-hidden rounded-xl shadow-sm ${widthClass} flex justify-center bg-gray-50`}>
+                        <div className={`relative overflow-hidden rounded-xl shadow-sm ${widthClass} flex justify-center bg-gray-50 min-h-[100px]`}>
+                            {!imageLoaded && (
+                                <div className="absolute inset-0 bg-gray-200 animate-pulse rounded-xl" />
+                            )}
                             <img
                                 src={getImageUrl(banner.image_url)}
                                 alt={banner.title || "Banner Promo"}
                                 // KUNCI UTAMANYA DISINI: w-full dan h-auto 
-                                className="w-full h-auto block object-contain pointer-events-none select-none"
+                                className={`w-full h-auto block object-contain pointer-events-none select-none transition-opacity duration-300 ${imageLoaded ? "opacity-100" : "opacity-0"}`}
                                 draggable={false}
+                                onLoad={() => setImageLoaded(true)}
                             />
                         </div>
                     ) : null}

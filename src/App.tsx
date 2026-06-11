@@ -45,6 +45,7 @@ import UserAddressPage from "./pages/landing_page/User/UserAddressPage";
 import ChangePasswordPage from "./pages/landing_page/User/ChangePasswordPage";
 import ResetPasswordPage from "./pages/landing_page/User/ResetPasswordPage";
 import PromoBannerPage from "./pages/landing_page/PromoBannerPage";
+import ServiceTrackingPage from "./pages/landing_page/ServiceTrackingPage";
 import AdminUsersPage from "./pages/admin_panel/UserPage";
 import ChatPage from "./pages/chat/ChatPage";
 import { SocketProvider } from "./contexts/SocketContext";
@@ -74,6 +75,7 @@ function AppRoutes() {
         <Route path="/price-list" element={<PublicPricelistPage />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/promo/:id" element={<PromoBannerPage />} />
+        <Route path="/track/servis/:token?" element={<ServiceTrackingPage />} />
 
         <Route path="/reset-password" element={<ResetPasswordPage />} />
 
