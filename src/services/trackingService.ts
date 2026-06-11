@@ -1,8 +1,10 @@
 import axios from "axios";
 
+const isDev = import.meta.env.DEV;
+
 // Dedicated API for tracking service
 const trackingApi = axios.create({
-  baseURL: "https://api.anandamcomputer.com/api/v1/public/tracking",
+  baseURL: isDev ? '/api-tracking/api/v1/public/tracking' : "https://api.anandamcomputer.com/api/v1/public/tracking",
   timeout: 20000,
 });
 

@@ -8,5 +8,25 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5173,
     strictPort: true,
+    proxy: {
+      '/api-marketplace': {
+        target: 'https://api-marketplace.anandamcomputer.com',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/api-marketplace/, ''),
+        headers: {
+          'Origin': 'https://api-marketplace.anandamcomputer.com',
+        },
+      },
+      '/api-tracking': {
+        target: 'https://api.anandamcomputer.com',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/api-tracking/, ''),
+        headers: {
+          'Origin': 'https://api.anandamcomputer.com',
+        },
+      },
+    },
   },
 });
