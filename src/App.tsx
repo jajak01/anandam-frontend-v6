@@ -1,124 +1,126 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { useEffect } from "react"
+import { useEffect, lazy, Suspense } from "react"
 import AOS from "aos"
 import "aos/dist/aos.css"
 
-import LoginPage from "./pages/admin_panel/LoginPage";
-import AdminLayout from "./components/admin/AdminLayout";
-import Dashboard from "./pages/admin_panel/Dashboard";
-import CategoryPage from "./pages/admin_panel/CategoryPage";
-import AdminProductPage from "./pages/admin_panel/ProductPage";
-import LandingPage from "./pages/landing_page/LandingPage";
-import ProductUpdatePage from "./pages/admin_panel/ProductUpdatePage";
-import ProductUploadPage from "./pages/admin_panel/ProductUploadPage";
-import AdminPricelistPage from "./pages/admin_panel/PricelistPage";
-import BannerPage from "./pages/admin_panel/BannerPage";
-import CertificatePage from "./pages/admin_panel/CertificatePage";
 import PublicLayout from "./components/PublicLayout";
-import ProductKatalogPage from "./pages/landing_page/ProductKatalogPage";
-import CategoriesPage from "./pages/landing_page/Categories";
-import ProductDetailPage from "./pages/landing_page/ProductDetailPage";
 import ScrollToTop from "./components/ScrollToTop";
 import ScrollToTopButton from "./components/CornerActions";
-import CompanyProfile from "./pages/landing_page/company_profile/ProfilLandingPage";
-import TermsPage from "./pages/landing_page/company_profile/TermsPage";
 import PageLoader from "./components/PageLoader";
-import GroupingPage from "./pages/landing_page/GroupingPage";
-import CertificateVerifyPage from "./pages/landing_page/CertificateVerifyPage";
-import SearchResultPage from "./pages/landing_page/SearchResultPage";
+import { SocketProvider } from "./contexts/SocketContext";
 import { initIdleTimer } from "./services/idleTimer";
-import BrandSection from "./pages/admin_panel/BrandPage";
-import PCBuilderPage from "./pages/landing_page/PCBuilderPage";
-import PCBuilderPreviewPage from "./pages/landing_page/PCBuilderPreviewPage";
-import PublicPricelistPage from "./pages/landing_page/PricelistPage";
-import ServerBusyPage from "./pages/ServerBusyPage";
-import TiktokPage from "./pages/admin_panel/TiktokPage";
 import { GlobalImportProvider } from "./components/admin/NotificationUpdateUpload";
-import ProfilePage from "./pages/landing_page/User/ProfilePage";
-import CartPage from "./pages/landing_page/User/CartPage";
-import OrderListPage from "./pages/admin_panel/OrderListPage";
-import UserOrderHistory from "./pages/landing_page/User/UserOrderHistory";
-import UserLayout from "./components/UserLayout";
 import AdminProtectedRoute from "./components/AdminProtectedRoute";
 import UserProtectedRoute from "./components/UserProtectedRoute";
-import UserAddressPage from "./pages/landing_page/User/UserAddressPage";
-import ChangePasswordPage from "./pages/landing_page/User/ChangePasswordPage";
-import ResetPasswordPage from "./pages/landing_page/User/ResetPasswordPage";
-import PromoBannerPage from "./pages/landing_page/PromoBannerPage";
-import ServiceTrackingPage from "./pages/landing_page/ServiceTrackingPage";
-import AdminUsersPage from "./pages/admin_panel/UserPage";
-import ChatPage from "./pages/chat/ChatPage";
-import { SocketProvider } from "./contexts/SocketContext";
+import UserLayout from "./components/UserLayout";
+import AdminLayout from "./components/admin/AdminLayout";
+
+// Lazy Loaded Pages
+const LoginPage = lazy(() => import("./pages/admin_panel/LoginPage"));
+const Dashboard = lazy(() => import("./pages/admin_panel/Dashboard"));
+const CategoryPage = lazy(() => import("./pages/admin_panel/CategoryPage"));
+const AdminProductPage = lazy(() => import("./pages/admin_panel/ProductPage"));
+const LandingPage = lazy(() => import("./pages/landing_page/LandingPage"));
+const ProductUpdatePage = lazy(() => import("./pages/admin_panel/ProductUpdatePage"));
+const ProductUploadPage = lazy(() => import("./pages/admin_panel/ProductUploadPage"));
+const AdminPricelistPage = lazy(() => import("./pages/admin_panel/PricelistPage"));
+const BannerPage = lazy(() => import("./pages/admin_panel/BannerPage"));
+const CertificatePage = lazy(() => import("./pages/admin_panel/CertificatePage"));
+const ProductKatalogPage = lazy(() => import("./pages/landing_page/ProductKatalogPage"));
+const CategoriesPage = lazy(() => import("./pages/landing_page/Categories"));
+const ProductDetailPage = lazy(() => import("./pages/landing_page/ProductDetailPage"));
+const CompanyProfile = lazy(() => import("./pages/landing_page/company_profile/ProfilLandingPage"));
+const TermsPage = lazy(() => import("./pages/landing_page/company_profile/TermsPage"));
+const GroupingPage = lazy(() => import("./pages/landing_page/GroupingPage"));
+const CertificateVerifyPage = lazy(() => import("./pages/landing_page/CertificateVerifyPage"));
+const SearchResultPage = lazy(() => import("./pages/landing_page/SearchResultPage"));
+const BrandSection = lazy(() => import("./pages/admin_panel/BrandPage"));
+const PCBuilderPage = lazy(() => import("./pages/landing_page/PCBuilderPage"));
+const PCBuilderPreviewPage = lazy(() => import("./pages/landing_page/PCBuilderPreviewPage"));
+const PublicPricelistPage = lazy(() => import("./pages/landing_page/PricelistPage"));
+const ServerBusyPage = lazy(() => import("./pages/ServerBusyPage"));
+const TiktokPage = lazy(() => import("./pages/admin_panel/TiktokPage"));
+const ProfilePage = lazy(() => import("./pages/landing_page/User/ProfilePage"));
+const CartPage = lazy(() => import("./pages/landing_page/User/CartPage"));
+const OrderListPage = lazy(() => import("./pages/admin_panel/OrderListPage"));
+const UserOrderHistory = lazy(() => import("./pages/landing_page/User/UserOrderHistory"));
+const UserAddressPage = lazy(() => import("./pages/landing_page/User/UserAddressPage"));
+const ChangePasswordPage = lazy(() => import("./pages/landing_page/User/ChangePasswordPage"));
+const ResetPasswordPage = lazy(() => import("./pages/landing_page/User/ResetPasswordPage"));
+const PromoBannerPage = lazy(() => import("./pages/landing_page/PromoBannerPage"));
+const ServiceTrackingPage = lazy(() => import("./pages/landing_page/ServiceTrackingPage"));
+const AdminUsersPage = lazy(() => import("./pages/admin_panel/UserPage"));
+const ChatPage = lazy(() => import("./pages/chat/ChatPage"));
 
 // ================= ROUTES =================
 function AppRoutes() {
-  const location = useLocation()
-
   return (
-    <Routes>
-      <Route path="/server-busy" element={<ServerBusyPage />} />
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
+        <Route path="/server-busy" element={<ServerBusyPage />} />
 
-      {/* ================= PUBLIC ROUTES (Ada Header/Footer) ================= */}
-      <Route element={<PublicLayout />}>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/products" element={<ProductKatalogPage />} />
-        <Route path="/product-categories" element={<CategoriesPage />} />
-        <Route path="/products/:id" element={<ProductDetailPage />} />
-        <Route path="/product-grouping" element={<GroupingPage />} />
-        <Route path="/company-profile" element={<CompanyProfile />} />
-        <Route path="/terms" element={<TermsPage />} />
-        <Route path="/certificate" element={<CertificateVerifyPage />} />
-        <Route path="/certificate/:id" element={<CertificateVerifyPage />} />
-        <Route path="/search" element={<SearchResultPage />} />
-        <Route path="/pc-builder" element={<PCBuilderPage />} />
-        <Route path="/pc-builder/preview" element={<PCBuilderPreviewPage />} />
-        <Route path="/price-list" element={<PublicPricelistPage />} />
-        <Route path="/cart" element={<CartPage />} />
-        <Route path="/promo/:id" element={<PromoBannerPage />} />
-        <Route path="/track/servis/:token?" element={<ServiceTrackingPage />} />
+        {/* ================= PUBLIC ROUTES (Ada Header/Footer) ================= */}
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/products" element={<ProductKatalogPage />} />
+          <Route path="/product-categories" element={<CategoriesPage />} />
+          <Route path="/products/:id" element={<ProductDetailPage />} />
+          <Route path="/product-grouping" element={<GroupingPage />} />
+          <Route path="/company-profile" element={<CompanyProfile />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/certificate" element={<CertificateVerifyPage />} />
+          <Route path="/certificate/:id" element={<CertificateVerifyPage />} />
+          <Route path="/search" element={<SearchResultPage />} />
+          <Route path="/pc-builder" element={<PCBuilderPage />} />
+          <Route path="/pc-builder/preview" element={<PCBuilderPreviewPage />} />
+          <Route path="/price-list" element={<PublicPricelistPage />} />
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/promo/:id" element={<PromoBannerPage />} />
+          <Route path="/track/servis/:token?" element={<ServiceTrackingPage />} />
 
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-        {/* NESTED ROUTING USER */}
-        <Route element={<UserProtectedRoute />}>
-          <Route path="/chat" element={<ChatPage />} />
-          <Route path="/user" element={<UserLayout />}>
-            <Route path="account/profile" element={<ProfilePage />} />
-            <Route path="account/addresses" element={<UserAddressPage />} />
-            <Route path="account/change-password" element={<ChangePasswordPage />} />
-            <Route path="purchase" element={<UserOrderHistory />} />
+          {/* NESTED ROUTING USER */}
+          <Route element={<UserProtectedRoute />}>
+            <Route path="/chat" element={<ChatPage />} />
+            <Route path="/user" element={<UserLayout />}>
+              <Route path="account/profile" element={<ProfilePage />} />
+              <Route path="account/addresses" element={<UserAddressPage />} />
+              <Route path="account/change-password" element={<ChangePasswordPage />} />
+              <Route path="purchase" element={<UserOrderHistory />} />
+            </Route>
           </Route>
         </Route>
-      </Route>
 
-      {/* ================= ADMIN ROUTES (AyamGoreng) ================= */}
-      <Route path="/ayamgoreng/login" element={<LoginPage />} />
+        {/* ================= ADMIN ROUTES (AyamGoreng) ================= */}
+        <Route path="/ayamgoreng/login" element={<LoginPage />} />
 
-      <Route path="/ayamgoreng" element={<AdminProtectedRoute role="admin" />}>
-        <Route element={
-          <GlobalImportProvider>
-            <AdminLayout />
-          </GlobalImportProvider>
-        }>
-          <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="chat" element={<ChatPage />} />
-          <Route path="category" element={<CategoryPage />} />
-          <Route path="product" element={<AdminProductPage />} />
-          <Route path="update-massal" element={<ProductUpdatePage />} />
-          <Route path="upload-massal" element={<ProductUploadPage />} />
-          <Route path="admin-pricelist" element={<AdminPricelistPage />} />
-          <Route path="banner" element={<BannerPage />} />
-          <Route path="certificate" element={<CertificatePage />} />
-          <Route path="brand" element={<BrandSection />} />
-          <Route path="tiktok" element={<TiktokPage />} />
-          <Route path="orders" element={<OrderListPage />} />
-          <Route path="users" element={<AdminUsersPage />} />
+        <Route path="/ayamgoreng" element={<AdminProtectedRoute role="admin" />}>
+          <Route element={
+            <GlobalImportProvider>
+              <AdminLayout />
+            </GlobalImportProvider>
+          }>
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="chat" element={<ChatPage />} />
+            <Route path="category" element={<CategoryPage />} />
+            <Route path="product" element={<AdminProductPage />} />
+            <Route path="update-massal" element={<ProductUpdatePage />} />
+            <Route path="upload-massal" element={<ProductUploadPage />} />
+            <Route path="admin-pricelist" element={<AdminPricelistPage />} />
+            <Route path="banner" element={<BannerPage />} />
+            <Route path="certificate" element={<CertificatePage />} />
+            <Route path="brand" element={<BrandSection />} />
+            <Route path="tiktok" element={<TiktokPage />} />
+            <Route path="orders" element={<OrderListPage />} />
+            <Route path="users" element={<AdminUsersPage />} />
+          </Route>
         </Route>
-      </Route>
 
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Suspense>
   )
 }
 
