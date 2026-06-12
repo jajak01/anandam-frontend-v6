@@ -21,6 +21,7 @@ import {
   Phone
 } from "lucide-react";
 import { Helmet } from "react-helmet-async";
+import ServiceStepper from "../../components/ServiceStepper";
 
 interface TimelineItem {
   status: string;
@@ -79,7 +80,6 @@ export default function ServiceTrackingPage() {
 
       // Optimization: If it's already in results, don't fetch again
       if (results.some(r => r.noServis === token)) {
-        window.scrollTo({ top: 0, behavior: "smooth" });
         return;
       }
       
@@ -91,7 +91,6 @@ export default function ServiceTrackingPage() {
       try {
         const res = await getServiceTracking(token);
         setData(res);
-        window.scrollTo({ top: 0, behavior: "smooth" });
       } catch (err: any) {
         console.error("Gagal mengambil data tracking:", err);
         setError("Data tracking tidak ditemukan. Pastikan nomor servis atau token benar.");
@@ -173,7 +172,7 @@ export default function ServiceTrackingPage() {
 
       {/* Header Section */}
       <div className="bg-blue-600 pt-8 pb-24 px-4 print:hidden">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-7xl 2xl:max-w-screen-2xl mx-auto">
           <div className="flex items-center justify-between mb-8">
             <button 
               onClick={() => activeService ? (results.length > 0 ? navigate(`/track/servis?phone=${searchParams.get("phone")}`) : navigate("/track/servis")) : navigate("/")}
@@ -208,7 +207,7 @@ export default function ServiceTrackingPage() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 -mt-16 print:mt-0">
+      <div className="max-w-7xl 2xl:max-w-screen-2xl mx-auto px-4 md:px-12 -mt-16 print:mt-0">
         
         {/* Search UI (only if not viewing detail) */}
         {!activeService && (
@@ -319,6 +318,15 @@ export default function ServiceTrackingPage() {
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Progress Stepper */}
+            <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-white p-6 md:p-8 mb-8 print:hidden">
+              <h3 className="text-xl font-black text-gray-900 mb-2 flex items-center gap-3">
+                <Settings className="text-blue-600 w-6 h-6" />
+                Progres Pengerjaan
+              </h3>
+              <ServiceStepper timeline={activeService.timeline} />
             </div>
 
             {/* Timeline Section */}
