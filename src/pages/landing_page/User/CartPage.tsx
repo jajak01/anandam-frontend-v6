@@ -200,13 +200,13 @@ export default function CartPage() {
                     </div>
 
                     {/* Image */}
-                    <Link to={`/product-katalog/${slugify(product?.name || "")}--${product?.id}`} className="w-20 h-20 sm:w-24 sm:h-24 bg-gray-50 rounded-md p-1 border border-gray-100 flex-shrink-0 overflow-hidden">
+                    <Link to={`/products/${slugify(product?.name || "")}--${product?.id}`} className="w-20 h-20 sm:w-24 sm:h-24 bg-gray-50 rounded-md p-1 border border-gray-100 flex-shrink-0 overflow-hidden">
                       <img src={imageUrl} className="w-full h-full object-contain" alt="product" />
                     </Link>
 
                     {/* Content */}
                     <div className="flex-1 min-w-0">
-                      <Link to={`/product-katalog/${slugify(product?.name || "")}--${product?.id}`} className="hover:text-primary transition-colors block">
+                      <Link to={`/products/${slugify(product?.name || "")}--${product?.id}`} className="hover:text-primary transition-colors block">
                         <h3 className="font-bold text-gray-800 text-sm line-clamp-1">{product?.name}</h3>
                       </Link>
                       <div className="flex items-center gap-2 mt-1">
@@ -247,7 +247,7 @@ export default function CartPage() {
                 </div>
                 <h3 className="text-base font-bold text-gray-800 uppercase tracking-tight">Wah, keranjangmu kosong</h3>
                 <p className="text-xs text-gray-500 mt-2 mb-8">Yuk, isi dengan barang-barang impianmu!</p>
-                <Link to="/product-katalog" className="inline-flex items-center px-8 py-3 bg-primary text-white rounded-md text-xs font-bold uppercase tracking-widest hover:bg-primary-dark transition-all">Mulai Belanja</Link>
+                <Link to="/products" className="inline-flex items-center px-8 py-3 bg-primary text-white rounded-md text-xs font-bold uppercase tracking-widest hover:bg-primary-dark transition-all">Mulai Belanja</Link>
               </div>
             )}
           </div>

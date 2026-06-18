@@ -73,7 +73,7 @@ export default function SearchResultPage() {
 
       {/* ================= BREADCRUMB ================= */}
       <div className="w-full bg-white">
-        <div className="h-14 flex items-center px-4 lg:px-8 max-w-7xl mx-auto">
+        <div className="h-14 flex items-center px-8 md:px-16 max-w-7xl 2xl:max-w-screen-2xl mx-auto">
           <Breadcrumb
             items={[
               { label: "Home", path: "/" },
@@ -85,7 +85,7 @@ export default function SearchResultPage() {
       </div>
 
       {/* ================= CONTENT ================= */}
-      <div className="px-4 lg:px-8 pt-4 pb-8 mx-auto max-w-7xl">
+      <div className="px-8 md:px-16 pt-4 pb-8 mx-auto max-w-7xl 2xl:max-w-screen-2xl">
 
         {/* TITLE */}
         {query && (
@@ -107,7 +107,7 @@ export default function SearchResultPage() {
         {loading && page === 1 ? (
           <div className={
             layout === "grid"
-              ? "grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4"
+              ? "grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-6"
               : "flex flex-col gap-4"
           }>
             {Array.from({ length: 20 }).map((_, i) => (
@@ -130,7 +130,7 @@ export default function SearchResultPage() {
 
           <div className={
             layout === "grid"
-              ? "grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4"
+              ? "grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-6"
               : "flex flex-col gap-4"
           }>
             {products.map((product) => (

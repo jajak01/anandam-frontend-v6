@@ -157,17 +157,11 @@ export default function SearchBar({
   return (
     <form onSubmit={handleSearch} className={`relative ${className}`}>
 
-      {/* INPUT */}
-      <div className="relative w-full">
-
-        <Search
-          size={18}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
-        />
-
+      {/* INPUT CONTAINER */}
+      <div className="relative w-full flex items-center h-10 border border-[#CBD5E1] rounded-button focus-within:border-color-primary bg-white overflow-hidden transition-colors">
         <input
           type="text"
-          placeholder="Search product..."
+          placeholder="Cari produk..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           onFocus={() => search && setShowDropdown(true)}
@@ -179,16 +173,13 @@ export default function SearchBar({
             }, 150);
           }}
           className="
-            w-full
-            pl-10 pr-10
-            py-2
+            flex-grow
+            h-full
+            pl-4 pr-14
             text-sm
-            bg-white
-            border
-            border-gray-300
-            rounded-md
-            focus:outline-none
-            focus:ring-0
+            bg-transparent
+            outline-none
+            border-none
           "
         />
 
@@ -199,11 +190,19 @@ export default function SearchBar({
               setSearch("");
               setShowDropdown(false);
             }}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+            className="absolute right-14 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
           >
             ✕
           </button>
         )}
+
+        <button
+          type="submit"
+          className="absolute right-0 top-0 bottom-0 w-12 h-full flex items-center justify-center bg-color-primary text-white hover:bg-color-primary-dark transition-colors"
+          aria-label="Cari"
+        >
+          <Search size={18} />
+        </button>
       </div>
 
       {/* DROPDOWN */}
@@ -288,7 +287,7 @@ export default function SearchBar({
               <div
                 key={item.id}
                 onClick={() => {
-                  navigate(`/product-katalog/${slugify(item.name)}--${item.id}`);
+                  navigate(`/products/${slugify(item.name)}--${item.id}`);
                   setShowDropdown(false);
                 }}
                 className="flex items-center gap-3 px-3 py-3 hover:bg-gray-50 cursor-pointer"

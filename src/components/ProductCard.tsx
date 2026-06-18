@@ -22,23 +22,23 @@ const ProductCard: React.FC<Props> = ({
   const [imageLoaded, setImageLoaded] = useState(false);
   const navigate = useNavigate();
 
-  // 🔥 LOGIC BARU: Ambil data dari variant pertama (index 0)
+  // Ambil data dari variant pertama (index 0)
   const variant = product.variants?.[0] || {};
   
-  // Gunakan data dari variant, jika tidak ada baru fallback ke data root (untuk compatibility data lama)
   const stock = Number(variant.stock ?? product.stock ?? 0);
   const normal = Number(variant.price_normal ?? product.price_normal ?? 0);
-  const discountValue = Number(variant.price_discount ?? product.price_discount ?? 0);
+  const discountValue = Number(variant.price_discount ?? product.price_discount ?? 0); // Nominal potongan
   const skuSeller = variant.sku_seller ?? product.sku_seller;
 
   const isOutOfStock = stock === 0;
-  const hasDiscount = discountValue > 0;
+  const hasDiscount = discountValue > 0 && discountValue < normal;
 
   const productSlug = `${slugify(product.name)}--${product.id}`;
-  const productLink = `${window.location.origin}/product-katalog/${productSlug}`;
+  const productLink = `${window.location.origin}/products/${productSlug}`;
   const message = `Hai, saya ingin bertanya mengenai produk berikut:\n\nNama Produk: ${product.name}\nLink Produk: ${productLink}\n\nTerima kasih.`;
   const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 
+  // Hitung persentase dari nominal potongan diskon secara akurat
   const discountPercent = hasDiscount
     ? ((discountValue / normal) * 100).toFixed(0) 
     : "0";
@@ -69,15 +69,7 @@ const ProductCard: React.FC<Props> = ({
   if (product.brand?.id && product.brand?.name) {
     metaItems.push({
       label: product.brand.name,
-      onClick: () => navigate(`/product-katalog?brand=${product.brand!.id}`),
-    });
-  }
-
-  if (product.category?.grouping?.name) {
-    metaItems.push({
-      label: product.category.grouping.name,
-      onClick: () =>
-        navigate(`/product-grouping?grouping=${encodeURIComponent(product.category!.grouping!.name)}`),
+      onClick: () => navigate(`/products?brand=${product.brand!.id}`),
     });
   }
 
@@ -92,46 +84,48 @@ const ProductCard: React.FC<Props> = ({
   return (
     <div
       onClick={() =>
-        navigate(`/product-katalog/${productSlug}`, {
+        navigate(`/products/${productSlug}`, {
           state: { from, category: product.category?.name },
         })
       }
       className={`
-        relative
-        rounded-lg
+        group relative
+        rounded-xl
         bg-white
-        border border-gray-200
+        border border-gray-250
         cursor-pointer
         transition-all duration-300
-        hover:shadow-md
-        ${layout === "grid" ? "flex flex-col" : "flex flex-row gap-4 p-3 items-start"}
+        hover:shadow-[0_8px_24px_rgba(149,157,165,0.12)]
+        hover:border-blue-100
+        overflow-hidden
+        ${layout === "grid" ? "flex flex-col h-full" : "flex flex-row gap-3 p-3 items-start"}
       `}
     >
-      {/* IMAGE CONTAINER */}
+      {/* ================= 1. IMAGE CONTAINER ================= */}
       <div
         className={`
-          relative overflow-hidden bg-white
-          ${layout === "grid" ? "w-full aspect-square rounded-t-lg" : "w-24 h-24 md:w-28 md:h-28 rounded-lg flex-shrink-0"}
+          relative overflow-hidden bg-whiteflex-shrink-0
+          ${layout === "grid" ? "w-full aspect-square" : "w-20 h-20 sm:w-24 sm:h-24 rounded-lg"}
         `}
       >
         {hasDiscount && !isOutOfStock && (
-          <div className="absolute top-2 right-2 z-10 bg-red-500 text-white text-[9px] sm:text-[10px] font-bold px-2 py-1 rounded-md shadow-sm tracking-wider uppercase">
+          <div className="absolute top-1.5 left-1.5 z-10 bg-red-500 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-md shadow-sm tracking-wide">
             {discountPercent}% OFF
           </div>
         )}
 
-        {!imageLoaded && <div className="absolute inset-0 animate-pulse bg-gray-200" />}
+        {!imageLoaded && <div className="absolute inset-0 animate-pulse bg-white" />}
         <img
           src={imageSrc}
           alt={product.name}
           onLoad={() => setImageLoaded(true)}
           draggable={false}
           className={`
-            w-full h-full object-cover
-            transition-all duration-300 ease-in-out
+            w-full h-full object-contain p-2
+            transition-transform duration-500 ease-out transform-gpu
             ${imageLoaded ? "opacity-100" : "opacity-0"}
-            ${!isOutOfStock ? "hover:scale-110" : ""}
-            ${isOutOfStock ? "opacity-40 grayscale" : ""}
+            ${!isOutOfStock ? "group-hover:scale-105" : ""}
+            ${isOutOfStock ? "opacity-30 grayscale" : ""}
           `}
           onError={(e) => {
             const filename = product.images?.[0]?.thumbnail_url?.split("/").pop();
@@ -144,30 +138,32 @@ const ProductCard: React.FC<Props> = ({
           }}
         />
         {isOutOfStock && (
-          <div className="absolute inset-0 bg-gray-500/40 flex items-center justify-center">
-             <span className="bg-black/60 text-white text-[10px] px-2 py-1 rounded">Habis</span>
+          <div className="absolute inset-0 bg-gray-100/40 backdrop-blur-[1px] flex items-center justify-center">
+             <span className="bg-gray-900/80 text-white text-[9px] font-bold px-2 py-0.5 rounded shadow-sm">Habis</span>
           </div>
         )}
       </div>
 
-      {/* CONTENT */}
+      {/* ================= 2. CONTENT AREA ================= */}
       <div
         className={`
-          flex
-          ${layout === "grid" ? "flex-col justify-between p-2 sm:p-3 flex-1" : "flex flex-col flex-1 justify-between"}
+          flex flex-col flex-1 justify-between p-2.5 sm:p-3
+          ${layout === "grid" ? "" : "pt-0 pl-0"}
         `}
       >
-        <div className="flex flex-col gap-1 flex-1">
-          <div className="text-[11px] text-gray-500 leading-tight flex items-center overflow-hidden whitespace-nowrap">
+        <div className="flex flex-col gap-1.5">
+          
+          {/* META BRAND / CATEGORY */}
+          <div className="text-[10px] sm:text-[11px] font-medium text-gray-400 leading-tight flex items-center overflow-hidden whitespace-nowrap">
             {metaItems.map((item, index) => (
               <React.Fragment key={index}>
-                {index > 0 && <span className="mx-1 text-gray-400 flex-shrink-0">|</span>}
+                {index > 0 && <span className="mx-1 text-gray-300 flex-shrink-0">|</span>}
                 <span
                   onClick={(e) => {
                     e.stopPropagation();
                     item.onClick();
                   }}
-                  className={`hover:text-primary cursor-pointer transition ${index === metaItems.length - 1 ? "truncate min-w-0 flex-1" : "flex-shrink-0"}`}
+                  className={`hover:text-blue-600 transition ${index === metaItems.length - 1 ? "truncate min-w-0 flex-1" : "flex-shrink-0"}`}
                 >
                   {item.label}
                 </span>
@@ -175,49 +171,57 @@ const ProductCard: React.FC<Props> = ({
             ))}
           </div>
 
+          {/* NAMA PRODUK */}
           <h3
-            className={`font-semibold leading-snug hover:text-primary mb-1 ${
+            className={`font-semibold text-gray-800 tracking-tight leading-snug group-hover:text-blue-600 transition-colors ${
               layout === "grid"
-                ? "text-[12px] sm:text-xs md:text-sm line-clamp-2 min-h-[32px] sm:min-h-[35px]"
-                : "text-[14px] md:text-lg line-clamp-2"
+                ? "text-[11px] sm:text-[12px] md:text-[13px] line-clamp-2 min-h-[34px] sm:min-h-[38px]"
+                : "text-[13px] md:text-base line-clamp-2"
             }`}
           >
             {product.name}
           </h3>
 
           {layout === "list" && skuSeller && (
-            <span className="text-sm text-gray-500">{skuSeller}</span>
+            <span className="text-[11px] text-gray-400 font-mono">SKU: {skuSeller}</span>
           )}
         </div>
 
-        {/* PRICE WRAPPER */}
-        <div className={layout === "grid" ? "mt-auto pt-1 flex items-end justify-between" : "flex items-center justify-between mt-2"}>
-          <div className="flex flex-col">
+        {/* ================= 3. PRICE & ACTIONS WRAPPER ================= */}
+        <div className="flex items-center justify-between mt-3 pt-1 border-t border-gray-50">
+          <div className="flex flex-col min-w-0 flex-1 pr-1">
+            
+            {/* HARGA CORET */}
             {hasDiscount ? (
-              <div className="flex items-center gap-2 h-[18px]">
-                <span className="text-[11px] md:text-xs text-gray-400 line-through">
-                  Rp {normal.toLocaleString()}
-                </span>
-              </div>
-            ) : layout === "grid" ? (
-              <div className="h-[18px]" />
-            ) : null}
+              <span className="text-[10px] sm:text-[11px] text-gray-400 line-through leading-none mb-0.5 truncate">
+                Rp {normal.toLocaleString("id-ID")}
+              </span>
+            ) : (
+              <span className="text-[10px] sm:text-[11px] opacity-0 leading-none mb-0.5 select-none pointer-events-none">-</span>
+            )}
 
-            <p className={`font-bold text-primary ${layout === "grid" ? "text-[14px] sm:text-base md:text-lg" : "text-sm md:text-base"}`}>
-              Rp {finalPrice.toLocaleString()}
+            {/* HARGA FINAL (Menggunakan ukuran proporsional yang Anda minta) */}
+            <p className={`font-bold text-blue-600 tracking-tight leading-none ${
+              layout === "grid" 
+                ? "text-[11px] sm:text-[12px] md:text-base" 
+                : "text-[12px] md:text-lg"
+            }`}>
+              Rp {finalPrice.toLocaleString("id-ID")}
             </p>
           </div>
 
-          <a
+          {/* WHATSAPP ACTION BUTTON */}
+          {/* <a
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="bg-green-500 hover:bg-green-600 text-white p-[6px] sm:p-2 rounded-md transition flex items-center justify-center shadow-sm"
+            className="bg-green-500 hover:bg-green-600 text-white p-1.5 sm:p-2 rounded-lg transition-all duration-200 flex items-center justify-center shadow-sm hover:shadow-md hover:scale-105 active:scale-95 flex-shrink-0"
           >
-            <FaWhatsapp className="w-[14px] h-[14px] sm:w-[16px] sm:h-[16px]" />
-          </a>
+            <FaWhatsapp className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          </a> */}
         </div>
+
       </div>
     </div>
   );

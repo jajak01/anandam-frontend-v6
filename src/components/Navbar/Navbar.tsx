@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu as MenuIcon, LogOut, User, ShoppingCart, ChevronDown, ShoppingBag, Home, Package } from "lucide-react";
+import { Menu as MenuIcon, LogOut, User, ShoppingCart, ChevronDown, ShoppingBag, Home, Package, MessageSquare, Headphones, Mail } from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa";
 import { useEffect, useState, useRef } from "react";
 import { logoutUser, getMyAddresses } from "../../services/userAuthService";
 import { getProducts } from "../../services/productService";
@@ -58,7 +59,10 @@ export default function Navbar() {
 
   const [search, setSearch] = useState("");
   const [results, setResults] = useState<Product[]>([]);
-  const [showDropdown, setShowDropdown] = useState(false);
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const [showWaDropdown, setShowWaDropdown] = useState(false);
+  const userDropdownRef = useRef<HTMLDivElement>(null);
+  const waDropdownRef = useRef<HTMLDivElement>(null);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [categorySuggestions, setCategorySuggestions] = useState<Category[]>([]);
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
@@ -103,6 +107,12 @@ export default function Navbar() {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setUserDropdownOpen(false);
+      }
+      if (userDropdownRef.current && !userDropdownRef.current.contains(event.target as Node)) {
+        setShowUserDropdown(false);
+      }
+      if (waDropdownRef.current && !waDropdownRef.current.contains(event.target as Node)) {
+        setShowWaDropdown(false);
       }
     };
 
@@ -191,16 +201,16 @@ export default function Navbar() {
 
   useEffect(() => {
     if (!search.trim() || search.length < 2) {
-      setResults([]); setSuggestions([]); setCategorySuggestions([]); setShowDropdown(false);
+      setResults([]); setSuggestions([]); setCategorySuggestions([]); setShowWaDropdown(false);
       return;
     }
-    setShowDropdown(true);
+    setShowWaDropdown(true);
     setLoadingSearch(true);
 
     const delay = setTimeout(async () => {
       if (cache.current[search]) {
         setResults(cache.current[search]);
-        setShowDropdown(true);
+        setShowWaDropdown(true);
         setLoadingSearch(false);
         return;
       }
@@ -220,7 +230,7 @@ export default function Navbar() {
 
         const uniqueCategories = Array.from(new Map(products.filter((p: Product) => p.category).map((p: Product) => [p.category!.id, p.category])).values()) as Category[];
         setCategorySuggestions(uniqueCategories);
-        setShowDropdown(true);
+        setShowWaDropdown(true);
       } catch (err) {
         console.error(err);
       } finally {
@@ -293,160 +303,260 @@ export default function Navbar() {
 
       <TopInfoBar onOpenOrderModal={() => setIsOrderModalOpen(true)} />
 
-      <div className={`sticky top-0 z-[1000] w-full bg-white border-b border-gray-200 transition-shadow ${isScrolled ? "shadow-md" : ""}`}>
+      <div className={`sticky top-0 z-[1000] w-full bg-white border-b border-gray-200 transition-shadow ${isScrolled ? "shadow-md" : "shadow-sm"}`}>
         <div className="w-full">
-          <div className="flex items-center justify-between max-w-7xl mx-auto w-full h-16 lg:h-20 px-4 md:px-6 gap-2 sm:gap-4">
+          <div className="flex items-center justify-between max-w-7xl 2xl:max-w-screen-2xl mx-auto w-full h-16 lg:h-20 px-4 md:px-12 gap-4">
             
-            <div className="flex items-center gap-4 lg:gap-8 flex-shrink-0">
+            {/* Left Area (Brand & Category) - Ditambahkan flex-shrink-0 agar logo tidak tergencet */}
+            <div className="flex items-center gap-4 lg:gap-6 flex-shrink-0">
               <Link to="/" className="flex-shrink-0">
-                <img src="/anandam-logo-blue.svg" alt="Anandam Logo" className="h-10 sm:h-10 lg:h-12 w-auto object-contain" />
+                <img src="/anandam-logo-blue.svg" alt="Anandam Logo" className="h-8 sm:h-8 lg:h-9 w-auto object-contain" />
               </Link>
 
               <DesktopNavLinks groupings={groupings} />
             </div>
 
-            <div className="hidden md:flex flex-1 justify-center min-w-0 px-2 lg:px-4">
-              <SearchBar className="w-full max-w-xl" dropdownWidth="w-full max-w-xl" />
+            <div className="hidden md:flex flex-1 justify-center min-w-0 mx-4 lg:mx-8 max-w-xl xl:max-w-2xl 2xl:max-w-3xl">
+              <SearchBar className="w-full" dropdownWidth="w-full" />
             </div>
 
-            <div className="flex items-center justify-end flex-shrink-0 gap-1 sm:gap-2 lg:gap-4">
+            {/* Right Area (Utilities & Auth) - Ditambahkan flex-shrink-0 agar barisan icon ukurannya terkunci */}
+            <div className="flex items-center justify-end flex-shrink-0 gap-2 md:gap-4 lg:gap-6">
               
               {/* RAKIT PC (Mobile & Desktop) */}
               <Link 
                 to="/pc-builder" 
-                className="relative flex w-12 h-12 sm:w-16 sm:h-16 items-center justify-center rounded-md transition-all duration-300 group"
-                title="Rakitan PC"
+                className="relative flex w-10 h-10 sm:w-12 sm:h-12 items-center justify-center rounded-button transition-all duration-300 group"
+                title="Rakit PC"
               >
                 <div className="relative flex flex-col items-center justify-center w-full h-full pointer-events-none">
                   <img 
                     src="/pc.svg" 
                     alt="Rakitan" 
-                    className="w-9 h-9 sm:w-9 sm:h-9 object-contain animate-rakitan-img drop-shadow-md"
+                    className="w-7 h-7 sm:w-8 sm:h-8 object-contain animate-rakitan-img drop-shadow-sm"
                   />
-                  <span className="absolute bottom-1 sm:bottom-1.5 text-[7px] sm:text-[9px] font-extrabold text-blue-700 tracking-wider animate-rakitan-text whitespace-nowrap uppercase">
+                  <span className="absolute bottom-0.5 text-[6px] sm:text-[7px] font-extrabold text-color-primary tracking-wider animate-rakitan-text whitespace-nowrap uppercase">
                     Rakit PC
                   </span>
                 </div>
               </Link>
 
-              {/* KERANJANG */}
-              <div 
-                className="relative flex justify-center group"
-                onMouseEnter={() => {
-                  if (window.innerWidth >= 1024) setShowCartPreview(true);
-                }} 
-                onMouseLeave={() => setShowCartPreview(false)}
-              >
-                <button
-                  onClick={() => navigate("/cart")}
-                  className="relative p-2 sm:p-2.5 rounded-md text-gray-600 hover:text-primary transition-all duration-300 z-10"
-                >
-                  <ShoppingCart size={24} strokeWidth={2} />
-                  {cartCount > 0 && (
-                    <span className="absolute top-1 sm:top-1.5 right-1 sm:right-1.5 bg-red-500 text-white text-[9px] sm:text-[10px] min-w-[16px] sm:min-w-[18px] h-[16px] sm:h-[18px] flex items-center justify-center rounded-full font-bold border-2 border-white shadow-sm animate-in zoom-in">
-                      {cartCount > 9 ? '9+' : cartCount}
-                    </span>
-                  )}
+              {/* CONTACT CENTER DROPDOWN (Mobile & Desktop) */}
+              <div className="relative flex justify-center group">
+                
+                {/* Trigger Button */}
+                <button className="relative cursor-pointer text-gray-600 group-hover:text-blue-600 transition-colors p-1 flex items-center justify-center">
+                  <MessageSquare size={20} strokeWidth={2} />
                 </button>
 
-                {/* Preview Cart Desktop */}
+                {/* Dropdown Container */}
                 <div
-                  className={`hidden lg:block absolute right-0 lg:left-1/2 lg:-translate-x-1/2 top-full pt-3 w-80 z-50
+                  className="absolute right-0 lg:left-1/2 lg:-translate-x-1/2 top-[calc(100%+8px)] lg:top-full lg:pt-3 w-[240px] z-50
                     transition-all duration-300 ease-out origin-top-right lg:origin-top
-                    ${showCartPreview 
-                      ? "opacity-100 translate-y-0 scale-100 pointer-events-auto" 
-                      : "opacity-0 -translate-y-2 scale-95 pointer-events-none"}
-                  `}
+                    opacity-0 -translate-y-2 scale-95 pointer-events-none 
+                    group-hover:opacity-100 group-hover:translate-y-0 group-hover:scale-100 group-hover:pointer-events-auto"
                 >
-                  <div className="relative bg-white border border-gray-100 rounded-md shadow-2xl overflow-hidden z-10">
-                    <div className="px-5 py-4 border-b bg-gray-50/50 flex justify-between items-center">
-                      <h3 className="text-sm font-bold text-gray-900">Keranjang</h3>
-                      {cartPreviewItems.length > 0 && (
-                        <span className="text-[11px] bg-primary/10 text-primary px-2 py-0.5 rounded-md font-bold">
-                          {cartCount} Item
-                        </span>
-                      )}
-                      <button 
-                        onClick={() => navigate("/cart")}
-                        className="text-[11px] font-bold text-primary hover:underline"
+                  {/* Segitiga penunjuk */}
+                  <div className="absolute top-1.5 right-3 lg:right-auto lg:left-1/2 lg:-translate-x-1/2 w-3.5 h-3.5 bg-[#f4f7f9] border-t border-l border-gray-200 transform rotate-45 z-10 rounded-tl-sm hidden lg:block"></div>
+
+                  {/* Main Card */}
+                  <div className="relative bg-white border border-gray-200 rounded-xl shadow-lg flex flex-col z-20 overflow-hidden">
+                    
+                    <div className="bg-[#f4f7f9] px-4 py-3 text-left border-b border-gray-200">
+                      <h3 className="text-blue-700 font-bold text-[13px] tracking-wide">Contact Center</h3>
+                      <p className="text-[10px] text-gray-500 mt-0.5 leading-relaxed">
+                        Ada pertanyaan? Kami siap membantu.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col">
+                      <a
+                        href="https://wa.me/6285950544597"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 px-4 py-2.5 border-b border-gray-100 hover:bg-blue-50/50 transition-colors text-left"
                       >
-                        Lihat
-                      </button>
-                    </div>
-
-                    <div className="max-h-[350px] overflow-y-auto scrollbar-hide">
-                      {cartPreviewItems.length > 0 ? (
-                        <div className="divide-y divide-gray-50">
-                          {cartPreviewItems.map((item) => {
-                            const product = item.product;
-                            const priceNormal = Number(product?.price_normal || 0);
-                            const priceDiscount = Number(product?.price_discount || 0);
-                            const finalPrice = priceDiscount > 0 ? priceNormal - priceDiscount : priceNormal;
-                            const imageUrl = product?.thumbnail?.startsWith("http")
-                              ? product.thumbnail
-                              : `${import.meta.env.VITE_API_BASE}${product?.thumbnail}`;
-
-                            return (
-                              <div key={item.id} className="flex gap-4 p-4 hover:bg-gray-50 transition group/item">
-                                <div className="w-14 h-14 bg-gray-50 rounded-md overflow-hidden flex-shrink-0 p-1 border border-gray-100">
-                                  <img src={imageUrl} className="w-full h-full object-contain" alt={product?.name} />
-                                </div>
-                                <div className="flex-1 min-w-0 flex flex-col justify-center">
-                                  <p className="text-sm font-bold text-gray-800 truncate hover:text-primary">{product?.name}</p>
-                                  <p className="text-[11px] text-gray-400 mt-0.5">
-                                    {item.quantity} x <span className="font-medium text-black">Rp {finalPrice.toLocaleString()}</span>
-                                  </p>
-                                </div>
-                              </div>
-                            );
-                          })}
+                        <div className="w-6 flex justify-center text-blue-600">
+                          <Headphones size={18} strokeWidth={1.5} />
                         </div>
-                      ) : (
-                        <div className="py-10 flex flex-col items-center justify-center text-center px-8">
-                          <div className="w-32 h-32 mb-4 flex items-center justify-center">
-                            <img 
-                              src="/cart.svg" 
-                              alt="Keranjang Kosong" 
-                              className="w-full h-full object-contain"
-                              onError={(e) => {
-                                e.currentTarget.src = "https://cdn-icons-png.flaticon.com/512/11329/11329060.png";
-                              }}
-                            />
-                          </div>
-                          <h3 className="text-sm font-bold text-gray-900 mb-1">
-                            Wah, keranjang belanjamu kosong
-                          </h3>
-                          <p className="text-[11px] text-gray-500 mb-6 leading-relaxed">
-                            Yuk, isi dengan barang-barang impianmu!
-                          </p>
-                          <button
-                            onClick={() => {
-                              setShowCartPreview(false);
-                              navigate("/product-katalog");
-                            }}
-                            className="w-full py-2.5 border border-primary text-primary rounded-md text-sm font-bold hover:bg-primary/10 transition-all active:scale-95"
-                          >
-                            Mulai Belanja
-                          </button>
+                        <div>
+                          <p className="text-[12px] font-semibold text-gray-800">Customer Care</p>
+                          <p className="text-[10px] text-gray-500 mt-0.5">0859-5054-4597</p>
                         </div>
-                      )}
-                    </div>
+                      </a>
 
-                    {cartPreviewItems.length > 0 && (
-                      <div className="p-4 bg-gray-50/50 border-t">
-                        <button
-                          onClick={() => navigate("/cart")}
-                          className="w-full bg-primary text-white py-2.5 rounded-md text-sm font-bold hover:bg-primary-dark transition-all active:scale-95 shadow-lg shadow-primary/20"
-                        >
-                          Lihat Selengkapnya
-                        </button>
-                      </div>
-                    )}
+                      <a
+                        href="mailto:sales@anandam.id"
+                        className="flex items-center gap-3 px-4 py-2.5 border-b border-gray-100 hover:bg-blue-50/50 transition-colors text-left"
+                      >
+                        <div className="w-6 flex justify-center text-blue-600">
+                          <Mail size={18} strokeWidth={1.5} />
+                        </div>
+                        <div>
+                          <p className="text-[12px] font-semibold text-gray-800">Kirim Email</p>
+                          <p className="text-[10px] text-gray-500 mt-0.5">sales@anandam.id</p>
+                        </div>
+                      </a>
+
+                      <a
+                        href="https://wa.me/6281228134747"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-blue-50/50 transition-colors text-left"
+                      >
+                        <div className="w-6 flex justify-center text-green-500">
+                          <FaWhatsapp size={18} />
+                        </div>
+                        <div>
+                          <p className="text-[12px] font-semibold text-gray-800">WhatsApp Marketing</p>
+                          <p className="text-[10px] text-gray-500 mt-0.5">0812-2813-4747</p>
+                        </div>
+                      </a>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* USER SECTION */}
+              {/* MOBILE CART BUTTON */}
+              <button
+                onClick={() => navigate("/cart")}
+                className="relative lg:hidden p-2 rounded-md text-gray-600 hover:text-color-primary transition-colors"
+                aria-label="Keranjang"
+              >
+                <ShoppingCart size={22} />
+                {cartCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[9px] min-w-[15px] h-[15px] flex items-center justify-center rounded-full font-bold border border-white shadow-sm">
+                    {cartCount > 9 ? '9+' : cartCount}
+                  </span>
+                )}
+              </button>
+
+              {/* DESKTOP ICON GROUP */}
+              <div className="hidden lg:flex items-center gap-6">
+                
+
+                {/* Cart Icon with Dropdown */}
+                <div 
+                  className="relative flex justify-center group"
+                  onMouseEnter={() => {
+                    if (window.innerWidth >= 1024) setShowCartPreview(true);
+                  }} 
+                  onMouseLeave={() => setShowCartPreview(false)}
+                >
+                  <button
+                    onClick={() => navigate("/cart")}
+                    className="relative p-1 rounded-md text-gray-600 hover:text-color-primary transition-colors duration-300 z-10"
+                  >
+                    <ShoppingCart size={22} />
+                    {cartCount > 0 && (
+                      <span className="absolute -top-1 -right-1.5 bg-red-500 text-white text-[9px] min-w-[16px] h-[16px] flex items-center justify-center rounded-full font-bold border-2 border-white shadow-sm animate-in zoom-in">
+                        {cartCount > 9 ? '9+' : cartCount}
+                      </span>
+                    )}
+                  </button>
+
+                  {/* Preview Cart Desktop */}
+                  <div
+                    className={`hidden lg:block absolute right-0 lg:left-1/2 lg:-translate-x-1/2 top-full pt-3 w-80 z-50
+                      transition-all duration-300 ease-out origin-top-right lg:origin-top
+                      ${showCartPreview 
+                        ? "opacity-100 translate-y-0 scale-100 pointer-events-auto" 
+                        : "opacity-0 -translate-y-2 scale-95 pointer-events-none"}
+                    `}
+                  >
+                    <div className="relative bg-white border border-gray-100 rounded-md shadow-2xl overflow-hidden z-10">
+                      <div className="px-5 py-4 border-b bg-gray-50/50 flex justify-between items-center">
+                        <h3 className="text-sm font-bold text-gray-900">Keranjang</h3>
+                        {cartPreviewItems.length > 0 && (
+                          <span className="text-[11px] bg-primary/10 text-primary px-2 py-0.5 rounded-md font-bold">
+                            {cartCount} Item
+                          </span>
+                        )}
+                        <button 
+                          onClick={() => { setShowCartPreview(false); navigate("/cart"); }}
+                          className="text-[11px] font-bold text-primary hover:underline"
+                        >
+                          Lihat
+                        </button>
+                      </div>
+
+                      <div className="max-h-[350px] overflow-y-auto scrollbar-hide">
+                        {cartPreviewItems.length > 0 ? (
+                          <div className="divide-y divide-gray-50">
+                            {cartPreviewItems.map((item) => {
+                              const product = item.product;
+                              const priceNormal = Number(product?.price_normal || 0);
+                              const priceDiscount = Number(product?.price_discount || 0);
+                              const finalPrice = priceDiscount > 0 ? priceNormal - priceDiscount : priceNormal;
+                              const imageUrl = product?.thumbnail?.startsWith("http")
+                                ? product.thumbnail
+                                : `${import.meta.env.VITE_API_BASE}${product?.thumbnail}`;
+
+                              return (
+                                <div key={item.id} className="flex gap-4 p-4 hover:bg-gray-50 transition group/item">
+                                  <div className="w-14 h-14 bg-gray-50 rounded-md overflow-hidden flex-shrink-0 p-1 border border-gray-100">
+                                    <img src={imageUrl} className="w-full h-full object-contain" alt={product?.name} />
+                                  </div>
+                                  <div className="flex-1 min-w-0 flex flex-col justify-center text-left">
+                                    <p className="text-sm font-bold text-gray-800 truncate hover:text-primary">{product?.name}</p>
+                                    <p className="text-[11px] text-gray-400 mt-0.5">
+                                      {item.quantity} x <span className="font-medium text-black">Rp {finalPrice.toLocaleString()}</span>
+                                    </p>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <div className="py-10 flex flex-col items-center justify-center text-center px-8">
+                            <div className="w-32 h-32 mb-4 flex items-center justify-center">
+                              <img 
+                                src="/cart.svg" 
+                                alt="Keranjang Kosong" 
+                                className="w-full h-full object-contain"
+                                onError={(e) => {
+                                  e.currentTarget.src = "https://cdn-icons-png.flaticon.com/512/11329/11329060.png";
+                                }}
+                              />
+                            </div>
+                            <h3 className="text-sm font-bold text-gray-900 mb-1">
+                              Wah, keranjang belanjamu kosong
+                            </h3>
+                            <p className="text-[11px] text-gray-500 mb-6 leading-relaxed">
+                              Yuk, isi dengan barang-barang impianmu!
+                            </p>
+                            <button
+                              onClick={() => {
+                                setShowCartPreview(false);
+                                navigate("/products");
+                              }}
+                              className="w-full py-2.5 border border-primary text-primary rounded-md text-sm font-bold hover:bg-primary/10 transition-all active:scale-95"
+                            >
+                              Mulai Belanja
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      {cartPreviewItems.length > 0 && (
+                        <div className="p-4 bg-gray-50/50 border-t">
+                          <button
+                            onClick={() => { setShowCartPreview(false); navigate("/cart"); }}
+                            className="w-full bg-primary text-white py-2.5 rounded-md text-sm font-bold hover:bg-primary-dark transition-all active:scale-95 shadow-lg shadow-primary/20"
+                          >
+                            Lihat Selengkapnya
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Vertical Divider */}
+              <div className="hidden lg:block w-px h-6 bg-color-border"></div>
+
+              {/* Auth or User Profile */}
               <div className="relative hidden lg:block" ref={dropdownRef}>
                 {currentUser ? (
                   <div 
@@ -488,16 +598,16 @@ export default function Navbar() {
                     />
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2">
+                  <div className="hidden lg:flex items-center gap-3">
                     <button 
                       onClick={() => openAuth('login')} 
-                      className="px-3 sm:px-5 py-2.5 text-xs sm:text-sm font-bold text-gray-700 hover:text-primary transition-colors"
+                      className="px-4 py-2 text-sm font-bold text-color-primary border border-color-primary rounded-button bg-transparent hover:bg-color-primary/5 transition-colors"
                     >
                       Masuk
                     </button>
                     <button 
                       onClick={() => openAuth('register')} 
-                      className="px-4 sm:px-6 py-2.5 text-xs sm:text-sm font-bold bg-primary text-white rounded-md hover:bg-primary-dark shadow-sm transition-all active:scale-95"
+                      className="px-5 py-2 text-sm font-bold bg-color-primary text-white rounded-button hover:bg-color-primary-dark shadow-sm transition-colors active:scale-95"
                     >
                       Daftar
                     </button>
@@ -561,12 +671,12 @@ export default function Navbar() {
             </div>
           </div>
         </div>
+      </div>
 
         {/* SEARCH BAR MOBILE */}
-        <div className="md:hidden px-4 pb-3 max-w-7xl mx-auto w-full">
+        <div className="md:hidden px-4 pt-2 pb-3 max-w-7xl mx-auto w-full">
           <SearchBar className="w-full" dropdownWidth="w-full" />
         </div>
-      </div>
 
       {/* ================= MOBILE BOTTOM NAVIGATION ================= */}
       <div className="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-100 z-[999] flex items-center justify-around pb-safe shadow-[0_-10px_20px_rgba(0,0,0,0.03)] h-16">
@@ -588,10 +698,10 @@ export default function Navbar() {
         </button>
 
         <button 
-          onClick={() => navigate("/product-katalog")} 
-          className={`flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${location.pathname === "/product-katalog" ? "text-primary" : "text-gray-400"}`}
+          onClick={() => navigate("/products")} 
+          className={`flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${location.pathname === "/products" ? "text-primary" : "text-gray-400"}`}
         >
-          <Package size={22} strokeWidth={location.pathname === "/product-katalog" ? 2.5 : 2} />
+          <Package size={22} strokeWidth={location.pathname === "/products" ? 2.5 : 2} />
           <span className="text-[10px] font-semibold">Katalog</span>
         </button>
 

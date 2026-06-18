@@ -6,9 +6,7 @@ import { FaWhatsapp } from "react-icons/fa";
 export default function FloatingActionButtons() {
   const location = useLocation()
 
-  const hideWhatsapp =
-    location.pathname.startsWith("/ayamgoreng") ||
-    location.pathname === "/company-profile"
+  const hideWhatsapp = true;
 
   const [visible, setVisible] = useState(false);
 
@@ -60,7 +58,7 @@ export default function FloatingActionButtons() {
     <>
       <div
         className="
-          fixed right-4 md:right-10 bottom-20 md:bottom-10
+          fixed right-6 md:right-8 bottom-[160px] md:bottom-[100px]
           z-[100]
           flex flex-col items-end gap-3
           pointer-events-none

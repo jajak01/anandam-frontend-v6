@@ -28,51 +28,54 @@ export default function LandingCategorySection({
 
   return (
     <section className="relative w-full bg-white"> 
-      <div className="relative z-10 max-w-7xl 2xl:max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-0 py-6 sm:py-10">
+      <div className="relative z-10 max-w-7xl 2xl:max-w-screen-2xl mx-auto px-4 sm:px-8 lg:px-0 py-4 sm:py-6">
         
-        {/* HEADER */}
-        {/* <div className="mb-6 sm:mb-8">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold font-cocogoose text-left text-gray-800">
-            Kategori
-          </h2>
-        </div> */}
-
-        {/* GRID - Diubah ke grid-cols-4 untuk mobile */}
-        <div className="grid grid-cols-4 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-8 gap-x-2 sm:gap-x-4 gap-y-6 sm:gap-y-8">
+        {/* CONTAINER UTAMA */}
+        <div className="
+          flex overflow-x-auto snap-x snap-mandatory gap-3 pb-4 
+          [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]
+          lg:grid lg:grid-cols-8 lg:gap-x-4 lg:gap-y-6 lg:overflow-visible lg:pb-0
+        ">
           {filteredGroupings.map((group) => (
             <div
               key={group.id}
               onClick={() =>
                 navigate(`/product-grouping?grouping=${group.name}`)
               }
-              className="flex flex-col items-center cursor-pointer group"
+              className="
+                flex flex-col items-center cursor-pointer group
+                w-[23%] flex-shrink-0 snap-start
+                sm:w-[18%] md:w-[14%]
+                lg:w-auto lg:flex-shrink-1
+              "
             >
               <div
                 className="
-                  w-14 h-14    
-                  sm:w-20 sm:h-20 
-                  md:w-24 md:h-24
-                  2xl:w-32 2xl:h-32 
-                  rounded-md
+                  w-12 h-12        /* Mobile (48px) */
+                  sm:w-14 sm:h-14  /* Layar agak lebar (56px) */
+                  md:w-[60px] md:h-[60px] 
+                  lg:w-[60px] lg:h-[60px]
+                  rounded-xl md:rounded-2xl
                   overflow-hidden
-                  bg-white
-                  transition-all duration-300
+                  bg-gray-50 border border-gray-100 shadow-sm
+                  transition-all duration-300 group-hover:shadow-md group-hover:-translate-y-1
+                  flex items-center justify-center
                 "
               >
                 {group.image_url ? (
                   <img
                     src={getImageUrl(group.image_url)}
                     alt={group.name}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                    className="w-full h-full object-contain p-2 transition-transform duration-300 group-hover:scale-110"
                   />
                 ) : (
-                  <div className="flex items-center justify-center h-full text-sm font-semibold text-gray-500">
+                  <div className="flex items-center justify-center h-full text-xs font-bold text-gray-400">
                     {group.name.charAt(0)}
                   </div>
                 )}
               </div>
 
-              <span className="mt-2 text-[10px] sm:text-sm 2xl:text-base text-center font-medium leading-tight transition-colors group-hover:text-blue-600 line-clamp-2">
+              <span className="mt-2 text-[10px] md:text-xs text-center font-medium text-gray-600 leading-tight transition-colors group-hover:text-blue-600 line-clamp-2 px-1">
                 {group.name}
               </span>
             </div>

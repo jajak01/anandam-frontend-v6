@@ -8,6 +8,18 @@ import Swal from "sweetalert2";
 import AuthModal from "../../components/Navbar/AuthModal";
 import { ChevronRight, Eye } from "lucide-react";
 
+// Fungsi helper pembentuk URL gambar agar seragam dengan ProductCard
+const getProductImageSrc = (p: any) => {
+    if (!p) return "/icon-anandam.svg";
+    const thumb = p.images?.[0]?.thumbnail_url;
+    const original = p.images?.[0]?.image_url;
+    const imagePath = thumb?.startsWith("/uploads") ? thumb : (original?.startsWith("/uploads") ? original : null);
+
+    if (!imagePath) return "/icon-anandam.svg";
+    return imagePath.startsWith("http") ? imagePath : `${import.meta.env.VITE_API_BASE}${imagePath}`;
+};
+
+// ================= KOMPONEN ROW (DENGAN FOTO PRODUK) =================
 const Row = ({ label, value, onChange, options, price, qtyKey, qty, setQty }: any) => {
     const [isOpen, setIsOpen] = useState(false);
     const [search, setSearch] = useState("");
@@ -25,11 +37,9 @@ const Row = ({ label, value, onChange, options, price, qtyKey, qty, setQty }: an
 
     const getItemStock = (p: any) => {
         if (!p) return 0;
-        
         if (p.variants && Array.isArray(p.variants)) {
             return p.variants.reduce((total: number, v: any) => total + Number(v.stock || 0), 0);
         }
-        
         return Number(p.stock ?? p.stok ?? 0);
     };
 
@@ -39,30 +49,40 @@ const Row = ({ label, value, onChange, options, price, qtyKey, qty, setQty }: an
 
     return (
         <div className="flex flex-col md:grid md:grid-cols-12 gap-3 md:gap-4 items-start md:items-center py-4 border-b border-gray-50 last:border-0">
-            {/* LABEL */}
-            <div className="md:col-span-3 text-[13px] font-bold text-gray-500 uppercase tracking-tight w-full">
+            {/* LABEL KATEGORI */}
+            <div className="md:col-span-3 text-[13px] font-bold text-gray-400 uppercase tracking-tight w-full md:pr-2">
                 {label}
             </div>
 
-            {/* DROPDOWN */}
+            {/* AREA SELEKTOR DROPDOWN */}
             <div className={`md:col-span-5 w-full relative ${isOpen ? 'z-50' : 'z-10'}`} ref={dropdownRef}>
                 <div
-                    className="w-full flex items-center justify-between border border-gray-200 p-2.5 rounded-md text-sm bg-white hover:border-primary transition-all cursor-pointer outline-none"
+                    className="w-full flex items-center gap-3 border border-gray-200 p-2 rounded-xl text-sm bg-white hover:border-primary hover:shadow-sm transition-all cursor-pointer outline-none min-h-[52px]"
                     onClick={() => setIsOpen(!isOpen)}
                 >
-                    <span className="flex-1 pr-4 text-gray-700 font-medium">
-                        {value ? `${value.name} (stok ${getItemStock(value)})` : `Pilih ${label}`}
+                    {/* 🟢 FOTO BARANG YANG SEDANG TERPILIH */}
+                    <div className="w-10 h-10 rounded-lg bg-gray-50 border border-gray-100 flex-shrink-0 flex items-center justify-center p-1 overflow-hidden">
+                        <img 
+                            src={getProductImageSrc(value)} 
+                            alt="Preview" 
+                            className={`w-full h-full object-contain ${!value ? "opacity-30" : ""}`}
+                        />
+                    </div>
+
+                    <span className={`flex-1 pr-2 line-clamp-2 font-medium ${value ? "text-gray-800" : "text-gray-400"}`}>
+                        {value ? `${value.name} (Stok ${getItemStock(value)})` : `Pilih ${label}`}
                     </span>
-                    <svg className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                    <svg className={`w-4 h-4 text-gray-400 transition-transform flex-shrink-0 mr-1 ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                 </div>
 
+                {/* MENU PILIHAN DROPDOWN */}
                 {isOpen && (
-                    <div className="absolute top-full left-0 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg overflow-hidden flex flex-col animate-fadeIn">
+                    <div className="absolute top-full left-0 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden flex flex-col animate-fadeIn max-w-[100vw] sm:max-w-full">
                         <div className="p-2 border-b border-gray-100 bg-gray-50 sticky top-0">
                             <input
                                 type="text"
                                 autoFocus
-                                className="w-full text-sm p-2 bg-white border border-gray-200 rounded-md outline-none focus:border-primary"
+                                className="w-full text-sm p-2 bg-white border border-gray-200 rounded-lg outline-none focus:border-primary"
                                 placeholder={`Cari ${label}...`}
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
@@ -72,10 +92,10 @@ const Row = ({ label, value, onChange, options, price, qtyKey, qty, setQty }: an
 
                         <div className="max-h-60 overflow-y-auto scrollbar-hide">
                             <div
-                                className="px-3 py-2.5 text-[11px] font-bold uppercase tracking-widest text-red-500 hover:bg-red-50 cursor-pointer border-b border-gray-50"
+                                className="px-3 py-2.5 text-[10px] font-extrabold uppercase tracking-widest text-red-500 hover:bg-red-50 cursor-pointer border-b border-gray-50"
                                 onClick={() => { onChange(null); setIsOpen(false); setSearch(""); }}
                             >
-                                -- Kosongkan --
+                                -- Kosongkan Pilihan --
                             </div>
                             
                             {filteredOptions.length > 0 ? (
@@ -84,7 +104,7 @@ const Row = ({ label, value, onChange, options, price, qtyKey, qty, setQty }: an
                                     return (
                                         <div
                                             key={p.id}
-                                            className={`px-3 py-2.5 text-sm cursor-pointer transition-colors flex justify-between items-center ${value?.id === p.id ? 'bg-primary/5 text-primary font-bold' : 'text-gray-700 hover:bg-gray-50'}`}
+                                            className={`px-3 py-2 flex gap-3 items-center text-sm cursor-pointer transition-colors border-b border-gray-50/50 last:border-0 ${value?.id === p.id ? 'bg-primary/5 text-primary font-bold' : 'text-gray-700 hover:bg-gray-50'}`}
                                             onClick={() => {
                                                 onChange(p);
                                                 setIsOpen(false);
@@ -92,8 +112,13 @@ const Row = ({ label, value, onChange, options, price, qtyKey, qty, setQty }: an
                                                 setQty((prev: any) => ({ ...prev, [qtyKey]: 1 }));
                                             }}
                                         >
-                                            <span className="flex-1 mr-2">{p.name}</span>
-                                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap ${totalStock < 5 ? 'bg-gray-100 text-gray-500' : 'bg-gray-100 text-gray-500'}`}>
+                                            {/* 🟢 MINI FOTO PADA DAFTAR PENCARIAN */}
+                                            <div className="w-9 h-9 bg-white border border-gray-100 rounded-md flex-shrink-0 p-1 flex items-center justify-center overflow-hidden">
+                                                <img src={getProductImageSrc(p)} alt={p.name} className="w-full h-full object-contain" />
+                                            </div>
+
+                                            <span className="flex-1 mr-2 line-clamp-2 leading-snug">{p.name}</span>
+                                            <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 whitespace-nowrap flex-shrink-0">
                                                 STOK {totalStock}
                                             </span>
                                         </div>
@@ -109,15 +134,15 @@ const Row = ({ label, value, onChange, options, price, qtyKey, qty, setQty }: an
                 )}
             </div>
 
-            {/* QTY & PRICE */}
-            <div className="flex items-center justify-between w-full md:col-span-4 gap-4 relative z-0">
+            {/* KUANTITAS (QTY) & ESTIMASI HARGA ROW */}
+            <div className="flex items-center justify-between w-full md:col-span-4 gap-4 relative z-0 md:pl-2">
                 <div className="flex items-center gap-3 md:justify-center md:w-full">
-                    <span className="text-[10px] text-gray-400 font-bold uppercase md:hidden tracking-widest">Qty</span>
+                    <span className="text-[10px] text-gray-400 font-extrabold uppercase md:hidden tracking-widest">Qty</span>
                     <input
                         type="number"
                         min={1}
                         max={value ? getItemStock(value) : 99} 
-                        className="w-16 border border-gray-200 p-2 rounded-md text-sm text-center bg-white outline-none focus:border-primary disabled:bg-gray-100"
+                        className="w-16 border border-gray-200 p-2 rounded-lg text-sm text-center bg-white outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-300"
                         value={qty[qtyKey] === "" ? "" : qty[qtyKey]}
                         disabled={!value}
                         onChange={(e) => {
@@ -134,7 +159,7 @@ const Row = ({ label, value, onChange, options, price, qtyKey, qty, setQty }: an
                         }}
                     />
                 </div>
-                <div className="text-right text-sm font-bold text-gray-800 md:w-full whitespace-nowrap">
+                <div className="text-right text-sm font-extrabold text-gray-800 md:w-full whitespace-nowrap">
                     Rp {price.toLocaleString("id-ID")}
                 </div>
             </div>
@@ -142,6 +167,7 @@ const Row = ({ label, value, onChange, options, price, qtyKey, qty, setQty }: an
     );
 };
 
+// ================= MAIN PC BUILDER PAGE COMPONENT =================
 export default function PCBuilderPage() {
     const navigate = useNavigate();
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -149,7 +175,6 @@ export default function PCBuilderPage() {
     const [selectedCPU, setSelectedCPU] = useState<Product | null>(null);
     const [selectedMobo, setSelectedMobo] = useState<Product | null>(null);
     const [selectedRAM, setSelectedRAM] = useState<Product | null>(null);
-
     const [selectedVGA1, setSelectedVGA1] = useState<Product | null>(null);
     const [selectedVGA2, setSelectedVGA2] = useState<Product | null>(null);
     const [selectedPSU, setSelectedPSU] = useState<Product | null>(null);
@@ -268,7 +293,14 @@ export default function PCBuilderPage() {
             { label: "HDD", item: selectedHDD1, key: "hdd1" },
             { label: "Monitor", item: selectedMonitor1, key: "monitor1" },
             { label: "OS", item: selectedOS, key: "os" },
-        ].filter(p => p.item).map(p => ({ ...p, qty: Number(qty[p.key]) || 1 }));
+        ]
+        .filter(p => p.item)
+        .map(p => ({ 
+            ...p, 
+            qty: Number(qty[p.key]) || 1,
+            // 🟢 Ikut kirimkan URL gambar produk yang valid ke halaman preview
+            image: getProductImageSrc(p.item)
+        }));
 
         if (parts.length === 0) {
             Swal.fire({ icon: 'warning', title: 'Belum Ada Komponen', text: 'Pilih minimal satu komponen dulu.' });
@@ -390,7 +422,6 @@ export default function PCBuilderPage() {
 
     return (
         <div className="bg-white min-h-screen">
-            {/* BREADCRUMB */}
             <div className="w-full bg-white border-b border-gray-100">
                 <div className="max-w-7xl mx-auto h-12 flex items-center px-4 lg:px-8">
                     <Breadcrumb items={[{ label: "Home", path: "/" }, { label: "Rakit PC" }]} />
@@ -398,22 +429,20 @@ export default function PCBuilderPage() {
             </div>
 
             <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
-                {/* HEADER */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                     <div>
                         <h1 className="text-xl font-bold text-gray-900 uppercase tracking-tight">PC Builder</h1>
                         <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-1">Konfigurasi PC Sesuai Kebutuhan</p>
                     </div>
-                    <button onClick={handleReset} className="text-[11px] font-bold text-red-500 uppercase tracking-widest bg-red-50 px-4 py-2 rounded-md hover:bg-red-100 transition-all">
+                    <button onClick={handleReset} className="text-[11px] font-bold text-red-500 uppercase tracking-widest bg-red-50 px-4 py-2 rounded-xl hover:bg-red-100 transition-all">
                         Reset Konfigurasi
                     </button>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                    {/* BUILDER AREA */}
                     <div className="lg:col-span-3 space-y-6">
                         {/* Section 1 */}
-                        <div className="bg-white p-5 rounded-md border border-gray-100 shadow-sm">
+                        <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
                             <div className="flex justify-between items-center mb-6">
                                 <h2 className="text-[11px] font-bold uppercase tracking-widest text-gray-400">Komponen Utama</h2>
                                 <span className="text-[9px] bg-primary text-white px-2 py-0.5 rounded-md font-bold uppercase tracking-widest">Wajib</span>
@@ -424,7 +453,7 @@ export default function PCBuilderPage() {
                         </div>
 
                         {/* Section 2 */}
-                        <div className="bg-white p-5 rounded-md border border-gray-100 shadow-sm">
+                        <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
                             <h2 className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-6">Graphics & Power</h2>
                             <Row label="VGA Utama" value={selectedVGA1} onChange={setSelectedVGA1} options={list.vgas} price={getPrice(selectedVGA1, "vga1")} qtyKey="vga1" qty={qty} setQty={setQty} />
                             <Row label="VGA Tambahan" value={selectedVGA2} onChange={setSelectedVGA2} options={list.vgas} price={getPrice(selectedVGA2, "vga2")} qtyKey="vga2" qty={qty} setQty={setQty} />
@@ -433,7 +462,7 @@ export default function PCBuilderPage() {
                         </div>
 
                         {/* Section 3 */}
-                        <div className="bg-white p-5 rounded-md border border-gray-100 shadow-sm">
+                        <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
                             <h2 className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-6">Cooling System</h2>
                             <Row label="Cooler CPU" value={selectedCoolerCPU} onChange={setSelectedCoolerCPU} options={list.coolerCPU} price={getPrice(selectedCoolerCPU, "coolerCPU")} qtyKey="coolerCPU" qty={qty} setQty={setQty} />
                             <Row label="Cooler Fan 1" value={selectedCoolerFan1} onChange={setSelectedCoolerFan1} options={list.coolerFan} price={getPrice(selectedCoolerFan1, "fan1")} qtyKey="fan1" qty={qty} setQty={setQty} />
@@ -442,7 +471,7 @@ export default function PCBuilderPage() {
                         </div>
 
                         {/* Section 4 */}
-                        <div className="bg-white p-5 rounded-md border border-gray-100 shadow-sm">
+                        <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
                             <h2 className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-6">Storage & Display</h2>
                             <Row label="SSD Utama" value={selectedSSD1} onChange={setSelectedSSD1} options={list.ssds} price={getPrice(selectedSSD1, "ssd1")} qtyKey="ssd1" qty={qty} setQty={setQty} />
                             <Row label="SSD Tambahan" value={selectedSSD2} onChange={setSelectedSSD2} options={list.ssds} price={getPrice(selectedSSD2, "ssd2")} qtyKey="ssd2" qty={qty} setQty={setQty} />
@@ -454,7 +483,7 @@ export default function PCBuilderPage() {
 
                     {/* SUMMARY CARD */}
                     <div className="space-y-6">
-                        <div className="bg-white p-6 rounded-md border border-gray-100 shadow-md lg:sticky lg:top-28">
+                        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-md lg:sticky lg:top-28">
                             <h2 className="text-sm font-bold text-gray-900 uppercase tracking-widest mb-6 border-b pb-4">Estimasi Biaya</h2>
                             
                             <div className="space-y-4 mb-8">
@@ -477,7 +506,7 @@ export default function PCBuilderPage() {
 
                             <button
                                 onClick={handlePreview}
-                                className="w-full mt-8 bg-white border border-primary text-primary py-4 rounded-md font-bold text-xs uppercase tracking-widest hover:bg-primary/5 transition-all flex items-center justify-center gap-2 mb-3 shadow-sm"
+                                className="w-full mt-8 bg-white border border-primary text-primary py-4 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-primary/5 transition-all flex items-center justify-center gap-2 mb-3 shadow-sm"
                             >
                                 <Eye size={16} />
                                 Preview Konfigurasi
@@ -485,7 +514,7 @@ export default function PCBuilderPage() {
 
                             <button
                                 onClick={handleConsult}
-                                className="w-full border border-green-400 text-green-400 py-4 rounded-md font-bold text-xs uppercase tracking-widest hover:bg-green-400/10 transition-all flex items-center justify-center gap-2"
+                                className="w-full border border-green-400 text-green-400 py-4 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-green-400/10 transition-all flex items-center justify-center gap-2"
                             >
                                 Tanya Dulu
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -496,7 +525,7 @@ export default function PCBuilderPage() {
                             <button 
                                 disabled={!isCoreComplete}
                                 onClick={handleCheckout}
-                                className="w-full mt-3 bg-primary text-white py-4 rounded-md font-bold text-xs uppercase tracking-widest hover:brightness-110 disabled:bg-gray-100 disabled:text-gray-400 transition-all flex items-center justify-center gap-2 group shadow-lg shadow-primary/20"
+                                className="w-full mt-3 bg-primary text-white py-4 rounded-xl font-bold text-xs uppercase tracking-widest hover:brightness-110 disabled:bg-gray-100 disabled:text-gray-400 transition-all flex items-center justify-center gap-2 group shadow-lg shadow-primary/20"
                             >
                                 Checkout Pesanan
                                 <ChevronRight size={16} className="transition-transform group-hover:translate-x-1" />

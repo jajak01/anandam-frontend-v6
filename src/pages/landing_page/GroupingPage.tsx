@@ -296,7 +296,7 @@ export default function GroupingPage() {
     <div>
       {/* ================= BREADCRUMB BAR ================= */}
       <div className="w-full bg-white">
-        <div className="flex items-center px-4 mx-auto h-14 lg:px-8 max-w-7xl">
+        <div className="flex items-center px-8 md:px-16 mx-auto h-14 max-w-7xl 2xl:max-w-screen-2xl">
           <div className="items-center w-full">
             <Breadcrumb
               items={[
@@ -309,7 +309,7 @@ export default function GroupingPage() {
       </div>
 
       {/* ================= MAIN CONTENT ================= */}
-      <div className="px-4 pt-4 pb-8 mx-auto lg:px-8 max-w-7xl">
+      <div className="px-8 md:px-16 pt-4 pb-8 mx-auto max-w-7xl 2xl:max-w-screen-2xl">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
           
           {/* ================= SIDEBAR ================= */}
@@ -405,7 +405,7 @@ export default function GroupingPage() {
               <div
                 className={
                   layout === "grid"
-                    ? "grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4"
+                    ? "grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4"
                     : "flex flex-col gap-4"
                 }
               >
@@ -426,7 +426,7 @@ export default function GroupingPage() {
               <div
                 className={
                   layout === "grid"
-                    ? "grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4"
+                    ? "grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4"
                     : "flex flex-col gap-4"
                 }
               >

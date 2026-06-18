@@ -243,7 +243,7 @@ export default function CategoriesPage() {
     <div>
       {/* ================= BREADCRUMB BAR ================= */}
       <div className="w-full bg-white">
-        <div className="flex items-center h-14 px-4 lg:px-8 max-w-7xl mx-auto">
+        <div className="flex items-center h-14 px-8 md:px-16 max-w-7xl 2xl:max-w-screen-2xl mx-auto">
           <Breadcrumb
             items={[
               { label: "Home", path: "/" },
@@ -262,7 +262,7 @@ export default function CategoriesPage() {
       </div>
 
       {/* ================= MAIN CONTENT ================= */}
-      <div className="px-4 lg:px-8 pt-4 pb-8 mx-auto max-w-7xl">
+      <div className="px-8 md:px-16 pt-4 pb-8 mx-auto max-w-7xl 2xl:max-w-screen-2xl">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           
           {/* ================= SIDEBAR ================= */}
@@ -366,7 +366,7 @@ export default function CategoriesPage() {
               <div
                 className={
                   layout === "grid"
-                    ? "grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4"
+                    ? "grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-6"
                     : "flex flex-col gap-4"
                 }
               >
@@ -387,7 +387,7 @@ export default function CategoriesPage() {
               <div
                 className={
                   layout === "grid"
-                    ? "grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4"
+                    ? "grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-6"
                     : "flex flex-col gap-4"
                 }
               >

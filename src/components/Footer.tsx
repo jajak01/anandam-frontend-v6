@@ -46,7 +46,7 @@ function CopyNumber({ label, number }: CopyNumberProps) {
 export default function Footer() {
   return (
     <footer className="w-full bg-black text-gray-300">
-      <div className="max-w-7xl mx-auto px-8 py-16">
+      <div className="max-w-7xl 2xl:max-w-screen-2xl mx-auto px-8 md:px-16 py-16">
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-12">
 
           {/* ================= BRAND ================= */}
@@ -160,7 +160,7 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/product-katalog" className="hover:text-white">
+                <Link to="/products" className="hover:text-white">
                   Produk Katalog
                 </Link>
               </li>

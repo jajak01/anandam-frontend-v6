@@ -149,7 +149,7 @@ export default function UserOrderHistory() {
                       const imageUrl = getProductImage(item.product);
 
                       return (
-                        <Link to={`/product-katalog/${slugify(item.product_name)}--${item.product_id}`} key={item.id} className="flex gap-4 p-4 hover:bg-gray-50 transition-colors">
+                        <Link to={`/products/${slugify(item.product_name)}--${item.product_id}`} key={item.id} className="flex gap-4 p-4 hover:bg-gray-50 transition-colors">
                           <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-md overflow-hidden flex-shrink-0 border border-gray-200">
                             {imageUrl ? (
                               <img src={imageUrl} alt={item.product_name} className="w-full h-full object-cover" />
@@ -200,7 +200,7 @@ export default function UserOrderHistory() {
                       
                       {(order.status === "LUNAS" || order.status === "BATAL") && (
                         <Link 
-                          to={`/product-katalog/${slugify(order.items?.[0]?.product_name || "")}--${order.items?.[0]?.product_id}`}
+                          to={`/products/${slugify(order.items?.[0]?.product_name || "")}--${order.items?.[0]?.product_id}`}
                           className="px-6 py-2 text-xs font-bold text-white bg-primary rounded-md hover:bg-primary-dark transition-colors uppercase tracking-wider text-center"
                         >
                           Beli Lagi
@@ -222,7 +222,7 @@ export default function UserOrderHistory() {
             <p className="text-xs text-gray-500 mt-1 mb-6 px-10 leading-relaxed">
               Kamu belum memiliki riwayat transaksi di kategori ini.
             </p>
-            <Link to="/product-katalog" className="inline-block px-8 py-2.5 bg-primary text-white rounded-md text-xs font-bold hover:bg-primary-dark transition-colors uppercase tracking-widest">
+            <Link to="/products" className="inline-block px-8 py-2.5 bg-primary text-white rounded-md text-xs font-bold hover:bg-primary-dark transition-colors uppercase tracking-widest">
               Mulai Belanja
             </Link>
           </div>

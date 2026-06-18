@@ -322,11 +322,11 @@ export default function ProductKatalogPage() {
     <div>
         {/* ================= BREADCRUMB BAR ================= */}
         <div className="w-full bg-white">
-            <div className="max-w-7xl w-full mx-auto h-14 flex items-center px-4 sm:px-6 lg:px-8">
+            <div className="max-w-7xl 2xl:max-w-screen-2xl w-full mx-auto h-14 flex items-center px-8 md:px-16">
                 <Breadcrumb
                     items={[
                         { label: "Home", path: "/" },
-                        { label: "Produk Katalog", path: "/product-katalog" },
+                        { label: "Produk Katalog", path: "/products" },
                         ...(categoryParam
                         ? [
                             {
@@ -341,7 +341,7 @@ export default function ProductKatalogPage() {
         </div>
 
         {/* ================= MAIN CONTENT ================= */}
-        <div className="px-8 pt-4 pb-8 mx-auto max-w-7xl 2xl:max-w-screen-2xl">
+        <div className="px-8 md:px-16 pt-4 pb-8 mx-auto max-w-7xl 2xl:max-w-screen-2xl">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 
                 {/* ================= SIDEBAR ================= */}
@@ -457,7 +457,7 @@ export default function ProductKatalogPage() {
                         <div
                             className={
                             layout === "grid"
-                                ? "grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5" // <--- Tambahkan di sini
+                                ? "grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4" // <--- Tambahkan di sini
                                 : "flex flex-col gap-4"
                             }
                         >
@@ -478,7 +478,7 @@ export default function ProductKatalogPage() {
                         <div
                             className={
                             layout === "grid"
-                                ? "grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5" // <--- Tambahkan di sini
+                                ? "grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4" // <--- Tambahkan di sini
                                 : "flex flex-col gap-4"
                             }
                         >

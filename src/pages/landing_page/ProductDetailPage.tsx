@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getProductById, getProductsByCategory, getProducts } from "../../services/productService";
 import { FaWhatsapp, FaSearchPlus, FaBan, FaCheckCircle } from "react-icons/fa";
-import { ChevronLeft, ChevronRight, Truck, ShieldCheck, ShoppingCart, X, Check, ShoppingBag } from "lucide-react";
+import { ChevronLeft, ChevronRight, Truck, ShieldCheck, ShoppingCart, X, Check, ShoppingBag, MessageSquare } from "lucide-react";
 import ProductCard from "../../components/ProductCard";
 import type { Product } from "../../types/product";
 import Breadcrumb from "../../components/Breadcrumb";
@@ -35,7 +35,7 @@ export default function ProductDetailPage() {
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
-  const [pendingAction, setPendingAction] = useState<"cart" | "wa" | null>(null);
+  const [pendingAction, setPendingAction] = useState<"cart" | "wa" | "chat" | null>(null);
 
   // --- STATE & REF UNTUK DRAG & ANIMASI SLIDER RELATED PRODUCTS ---
   const [isSwiping, setIsSwiping] = useState(false);
@@ -379,6 +379,20 @@ export default function ProductDetailPage() {
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
+  const handleAskProductWebsite = () => {
+    if (!product) return;
+    const token = localStorage.getItem("user_token") || localStorage.getItem("token");
+    if (!token) {
+      setPendingAction("chat"); 
+      setIsAuthModalOpen(true);
+      return;
+    }
+    // Buka widget chat secara instan
+    window.dispatchEvent(new CustomEvent('openChatWithProduct', { 
+      detail: { product_id: product.id, product_name: product.name } 
+    }));
+  };
+
   // --- LOGIC VARIASI ---
   const handleSelectVariant = (variant: any) => {
     setSelectedVariasi(variant.variant_name);
@@ -540,7 +554,7 @@ export default function ProductDetailPage() {
           <Breadcrumb
             items={[
               { label: "Home", path: "/" },
-              { label: "Produk Katalog", path: "/product-katalog" },
+              { label: "Produk Katalog", path: "/products" },
               { label: product.name },
             ]}
           />
@@ -776,14 +790,23 @@ export default function ProductDetailPage() {
 
                 </div>
 
-                {/* 4. TOMBOL TANYA WA (HIGHLIGHT UTAMA) */}
-                <button
-                  onClick={handleAskProduct}
-                  className="w-full h-11 bg-[#25D366] hover:bg-green-500 text-white text-sm font-semibold rounded-md flex items-center justify-center gap-2"
-                >
-                  <FaWhatsapp size={20} className="animate-pulse" />
-                  Tanya Produk via WhatsApp
-                </button>
+                {/* 4. TOMBOL TANYA (PILIHAN CHAT) */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleAskProductWebsite}
+                    className="flex-1 h-11 bg-blue-600 hover:bg-blue-700 text-white text-xs lg:text-sm font-semibold rounded-md flex items-center justify-center gap-1 sm:gap-2 transition-colors shadow-sm"
+                  >
+                    <MessageSquare size={18} />
+                    Chat via Website
+                  </button>
+                  <button
+                    onClick={handleAskProduct}
+                    className="flex-1 h-11 bg-[#25D366] hover:bg-green-500 text-white text-xs lg:text-sm font-semibold rounded-md flex items-center justify-center gap-1 sm:gap-2 transition-colors shadow-sm"
+                  >
+                    <FaWhatsapp size={18} />
+                    WhatsApp
+                  </button>
+                </div>
               </div>
 
               {/* TRUST BADGES */}
@@ -1095,6 +1118,8 @@ export default function ProductDetailPage() {
           setIsAuthModalOpen(false);
           if (pendingAction === "wa") {
             handleWaCheckout();
+          } else if (pendingAction === "chat") {
+            handleAskProductWebsite();
           } else {
             handleAddToCart();
           }

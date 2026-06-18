@@ -37,16 +37,14 @@ export default function DesktopNavLinks({ groupings }: { groupings: Grouping[] }
         onMouseLeave={() => setOpen(false)}
       >
         <div 
-          className={`relative flex items-center gap-1.5 cursor-pointer transition px-3 py-2 rounded-md font-bold ${
-            open ? 'text-primary' : 'text-gray-700 hover:text-primary'
+          className={`w-10 h-10 flex items-center justify-center rounded-button border cursor-pointer transition-colors ${
+            open 
+              ? 'border-color-primary text-color-primary bg-color-primary/5' 
+              : 'border-color-border text-gray-700 hover:border-color-primary hover:text-color-primary'
           }`}
+          aria-label="Kategori"
         >
-          <LayoutGrid size={20} strokeWidth={2.5} />
-          <ChevronDown 
-            size={14} 
-            strokeWidth={3} 
-            className={`transition-transform duration-300 ${open ? 'rotate-180' : ''}`} 
-          />
+          <LayoutGrid size={20} strokeWidth={2} />
         </div>
 
         {/* Jembatan transparan agar hover tidak terputus */}
@@ -69,7 +67,7 @@ export default function DesktopNavLinks({ groupings }: { groupings: Grouping[] }
                 Tentang Kami
               </div>
               <div
-                onClick={() => { navigate("/product-katalog"); setOpen(false); }}
+                onClick={() => { navigate("/products"); setOpen(false); }}
                 className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-primary cursor-pointer transition-colors"
               >
                 {/* <BookOpen size={18} /> */}

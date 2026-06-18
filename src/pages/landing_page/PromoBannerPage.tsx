@@ -53,7 +53,7 @@ export default function PromoBannerPage() {
             try {
                 setLoadingBanner(true);
                 
-                // 1. Cukup ambil banners saja
+                // 1. Ambil semua banners
                 const bannerRes = await getBanners();
 
                 // 2. Cari banner yang ID-nya sama dengan params URL
@@ -64,8 +64,8 @@ export default function PromoBannerPage() {
                 if (currentBanner) {
                     setBanner(currentBanner);
 
-                    // 3. AMBIL LANGSUNG DARI OBJEK BANNER
-                    // Karena di NestJS sudah kita kasih relations: ['categories', 'brands']
+                    // Tidak perlu list carousel, kita hanya butuh 1 banner yang diklik
+                    // 4. AMBIL LANGSUNG DARI OBJEK BANNER
                     const bIds = currentBanner.brands?.map((b: any) => b.id).join(",");
                     const cIds = currentBanner.categories?.map((c: any) => c.id).join(",");
 
@@ -86,6 +86,8 @@ export default function PromoBannerPage() {
 
         if (id) fetchMasterData();
     }, [id]);
+
+
 
     useEffect(() => {
         const fetchPromoProducts = async () => {
@@ -125,6 +127,9 @@ export default function PromoBannerPage() {
         fetchPromoProducts();
     }, [currentPage, isMasterLoaded, brandIds, categoryIds, id]);
 
+    const isHero = banner?.slot === 'hero';
+    const widthClass = isHero ? 'max-w-4xl mx-auto' : 'w-full';
+
     return (
         <div className="w-full min-h-screen bg-white pb-20">
             <div className="max-w-7xl w-full mx-auto pt-4 flex items-center px-4 sm:px-6 lg:px-8">
@@ -140,13 +145,16 @@ export default function PromoBannerPage() {
             <section className="w-full bg-white pt-4 pb-8">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6">
                     {loadingBanner ? (
-                        <div className="w-full aspect-[21/9] sm:aspect-[4/1] bg-gray-200 animate-pulse rounded-md" />
+                        // Skeleton sementara saat loading (pakai rasio standar agar tidak kolaps)
+                        <div className={`${widthClass} aspect-[4/1] bg-gray-200 animate-pulse rounded-xl`} />
                     ) : banner ? (
-                        <div className="w-full rounded-xl overflow-hidden shadow-sm relative">
+                        // Container tidak lagi dikunci rasionya
+                        <div className={`relative overflow-hidden rounded-xl shadow-sm ${widthClass} flex justify-center bg-gray-50`}>
                             <img
                                 src={getImageUrl(banner.image_url)}
                                 alt={banner.title || "Banner Promo"}
-                                className="w-full h-auto block select-none pointer-events-none"
+                                // KUNCI UTAMANYA DISINI: w-full dan h-auto 
+                                className="w-full h-auto block object-contain pointer-events-none select-none"
                                 draggable={false}
                             />
                         </div>
@@ -199,7 +207,7 @@ export default function PromoBannerPage() {
                                     Promo ini belum memiliki produk dengan kriteria tersebut.
                                 </p>
                                 <button 
-                                    onClick={() => navigate('/product-katalog')}
+                                    onClick={() => navigate('/products')}
                                     className="px-6 py-2.5 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800"
                                 >
                                     Ke Katalog Produk

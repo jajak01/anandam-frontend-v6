@@ -2,6 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-primary: #2563EB;
+  --color-primary-dark: #1E40AF;
+  --color-accent: #39FF14;
+  --color-accent-hover: #9ACC00;
+  --color-bg-light: #F8FAFC;
+  --color-bg-surface: #FFFFFF;
+  --color-border: #E2E8F0;
+  --radius-button: 8px;
+  --radius-container: 16px;
+  --max-container-width: 1440px;
+}
+
 @font-face {
   font-family: 'Butterpop';
   src: url('/fonts/Butterpop.ttf') format('truetype');
@@ -32,13 +45,23 @@ input:-webkit-autofill:hover {
 }
 
 body {
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Inter', sans-serif;
+}
+
+img {
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
-.scrollbar-hide {
+.scrollbar-hide { 
   -ms-overflow-style: none;
   scrollbar-width: none;
 }

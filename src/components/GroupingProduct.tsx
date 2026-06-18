@@ -17,13 +17,17 @@ export default function GroupingProductSlider() {
       const allGroupings = await getGroupings();
 
       const getGroupCatIds = (groupName: string) => {
-        const group = allGroupings.find((g: any) => g.name === groupName);
+        const group = allGroupings.find((g: any) => 
+          g.name.toLowerCase().trim() === groupName.toLowerCase().trim()
+        );
         return group ? group.children.map((c: any) => c.id) : [];
       };
 
       const getCatIdByName = (catName: string) => {
         for (const g of allGroupings) {
-          const cat = g.children.find((c: any) => c.name === catName);
+          const cat = g.children.find((c: any) => 
+            c.name.toLowerCase().trim() === catName.toLowerCase().trim()
+          );
           if (cat) return cat.id;
         }
         return null;
@@ -78,12 +82,31 @@ export default function GroupingProductSlider() {
 
           const productsRes = await getProducts({
             category_ids: section.catIds.join(","),
-            limit: 20,
+            limit: 40, 
+          });
+
+          const rawProducts = Array.isArray(productsRes.data) ? productsRes.data : [];
+
+          // 🟢 LOGIKA FILTER BARU: Menghitung total stok dari seluruh varian produk
+          const availableProducts = rawProducts.filter((product: any) => {
+            if (!product) return false;
+
+            // Jika produk tidak memiliki varian, asumsikan stoknya 0
+            if (!product.variants || !Array.isArray(product.variants)) return false;
+
+            // Jumlahkan nilai 'stock', 'stok', atau 'qty' dari setiap objek varian
+            const totalStokVarian = product.variants.reduce((acc: number, variant: any) => {
+              const vStock = variant.stock ?? variant.stok ?? variant.qty ?? variant.quantity ?? 0;
+              return acc + vStock;
+            }, 0);
+
+            // Produk lolos filter jika total stok variannya lebih dari 0
+            return totalStokVarian > 0;
           });
 
           return {
             ...section,
-            products: productsRes.data || [],
+            products: availableProducts.slice(0, 15), // Ambil maksimal 15 produk ready
           };
         })
       );
@@ -249,8 +272,16 @@ function SliderSection({ title, queryGroup, products }: any) {
   useEffect(() => {
     if (isHovered || isSwiping || isAnimating || !products || products.length === 0) return; 
 
+    const checkShouldScroll = () => {
+      if (!scrollRef.current) return false;
+      // Cek apakah ada konten yang tersembunyi (perlu di-scroll)
+      return scrollRef.current.scrollWidth > scrollRef.current.clientWidth;
+    };
+
     const timer = setInterval(() => {
-      scrollRightAction(); 
+      if (checkShouldScroll()) {
+        scrollRightAction(); 
+      }
     }, 4000); 
 
     return () => clearInterval(timer);
@@ -261,7 +292,7 @@ function SliderSection({ title, queryGroup, products }: any) {
 
   return (
     <section className="py-4 md:py-6 bg-white">
-      <div className="max-w-7xl 2xl:max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-0">
+      <div className="max-w-7xl 2xl:max-w-screen-2xl mx-auto px-8 md:px-16">
         <div 
           className="relative"
           onMouseEnter={() => setIsHovered(true)}
@@ -329,12 +360,10 @@ function SliderSection({ title, queryGroup, products }: any) {
                 key={product.id}
                 className="
                   product-slide flex-shrink-0 snap-start select-none
-                  w-[calc(50%-8px)]     
-                  sm:w-[180px]
-                  md:w-[210px]
-                  lg:w-[230px]
-                  xl:w-[236px]
-                  2xl:w-[246px] 
+                  w-[calc(50%-8px)]
+                  sm:w-[calc(33.33%-12px)]
+                  md:w-[calc(25%-18px)]
+                  lg:w-[calc(16.66%-20px)]
                 "
               >
                 <div className={isSwiping ? "pointer-events-none select-none" : ""}>
@@ -350,9 +379,9 @@ function SliderSection({ title, queryGroup, products }: any) {
                 w-[calc(50%-8px)]
                 sm:w-[180px]
                 md:w-[210px]
-                lg:w-[230px]
-                xl:w-[236px]
-                2xl:w-[246px] 
+                lg:w-[210px]
+                xl:w-[190px]
+                2xl:w-[200px] 
               "
             >
               <div

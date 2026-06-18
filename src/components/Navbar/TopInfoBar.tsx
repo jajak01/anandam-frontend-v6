@@ -33,7 +33,7 @@ export default function TopInfoBar({ onOpenOrderModal }: TopInfoBarProps) {
         }
       `}</style>
 
-      <div className="w-full mx-auto px-4 md:px-6 py-2">
+      <div className="w-full max-w-7xl 2xl:max-w-screen-2xl mx-auto px-4 md:px-12 py-2">
         {/* MOBILE VERSION */}
         <div className="md:hidden overflow-hidden relative">
           <div className="marquee-container flex items-center gap-12">
