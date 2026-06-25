@@ -12,6 +12,7 @@ import { checkoutDirect } from "../../services/orderSevice";
 import Swal from "sweetalert2";
 import AuthModal from "../../components/Navbar/AuthModal";
 import { Helmet } from "react-helmet-async";
+import { createProductSchema, getProductMetaTags } from "../../components/SEO/ProductSchema";
 
 export default function ProductDetailPage() {
   const [loadingRelated, setLoadingRelated] = useState(true);
@@ -505,48 +506,63 @@ export default function ProductDetailPage() {
     ? ((discountPrice / normalPrice) * 100).toFixed(0)
     : "0";
 
-  // SEO: Structured Data (JSON-LD)
-  const jsonLd = {
-    "@context": "https://schema.org/",
-    "@type": "Product",
-    "name": product.name,
-    "image": product.images?.map((img) => 
-      img.image_url?.startsWith("http") ? img.image_url : `${import.meta.env.VITE_API_BASE}${img.image_url}`
-    ),
-    "description": product.description || `Beli ${product.name} dengan harga terbaik di Anandam Computer.`,
-    "sku": activeVariant?.sku_seller || product.sku_seller || product.id,
-    "brand": {
-      "@type": "Brand",
-      "name": product.brand?.name || "Anandam Computer"
-    },
-    "offers": {
-      "@type": "Offer",
-      "url": window.location.href,
-      "priceCurrency": "IDR",
-      "price": finalPrice,
-      "itemCondition": "https://schema.org/NewCondition",
-      "availability": isOutOfStock ? "https://schema.org/OutOfStock" : "https://schema.org/InStock"
-    }
-  };
+  // SEO: Canonical URL (tidak menggunakan window.location untuk kompatibilitas prerender)
+  // Gunakan origin dari meta env atau fallback
+  const canonicalUrl = `${import.meta.env.VITE_SITE_URL || 'https://anandamcomputer.com'}/products/${realId}`;
+
+  // SEO: Structured Data via utility
+  const schemaMarkup = createProductSchema({
+    name: product.name,
+    id: product.id,
+    description: product.description || '',
+    images: product.images || [],
+    sku: activeVariant?.sku_seller || product.sku_seller || product.id,
+    brand: product.brand,
+    price: finalPrice,
+    inStock: !isOutOfStock,
+    canonicalUrl,
+  });
+
+  // SEO: Meta tags via utility
+  const metaTags = getProductMetaTags({
+    name: product.name,
+    description: product.description,
+    images: product.images,
+    price: finalPrice,
+    inStock: !isOutOfStock,
+    canonicalUrl,
+  });
 
   return (
     <>
       <Helmet>
-        <title>{`${product.name} - Anandam Computer`}</title>
-        <meta name="description" content={product.description?.substring(0, 160) || `Beli ${product.name} dengan harga terbaik. Tersedia garansi resmi dan pengiriman cepat.`} />
-        <link rel="canonical" href={window.location.href} />
-        
-        {/* Open Graph Tags */}
-        <meta property="og:title" content={`${product.name} - Anandam Computer`} />
-        <meta property="og:description" content={product.description?.substring(0, 160)} />
-        <meta property="og:url" content={window.location.href} />
-        <meta property="og:type" content="product" />
-        <meta property="og:image" content={product.images?.[0]?.image_url?.startsWith("http") ? product.images[0].image_url : `${import.meta.env.VITE_API_BASE}${product.images?.[0]?.image_url}`} />
+        <title>{metaTags.title}</title>
+        <meta name="description" content={metaTags.description} />
+        <link rel="canonical" href={metaTags.canonical} />
 
-        {/* Structured Data */}
-        <script type="application/ld+json">
-          {JSON.stringify(jsonLd)}
-        </script>
+        {/* Open Graph Tags */}
+        <meta property="og:title" content={metaTags.og.title} />
+        <meta property="og:description" content={metaTags.og.description} />
+        <meta property="og:url" content={metaTags.og.url} />
+        <meta property="og:type" content={metaTags.og.type} />
+        {metaTags.og.image && <meta property="og:image" content={metaTags.og.image} />}
+
+        {/* Twitter Card Tags */}
+        <meta name="twitter:card" content={metaTags.twitter.card} />
+        <meta name="twitter:title" content={metaTags.twitter.title} />
+        <meta name="twitter:description" content={metaTags.twitter.description} />
+        {metaTags.twitter.image && <meta name="twitter:image" content={metaTags.twitter.image} />}
+        <meta name="twitter:label1" content={metaTags.twitter.label1} />
+        <meta name="twitter:data1" content={metaTags.twitter.data1} />
+        <meta name="twitter:label2" content={metaTags.twitter.label2} />
+        <meta name="twitter:data2" content={metaTags.twitter.data2} />
+
+        {/* Structured Data (JSON-LD) */}
+        {product && schemaMarkup && (
+          <script type="application/ld+json">
+            {schemaMarkup}
+          </script>
+        )}
       </Helmet>
 
       <div className="max-w-7xl mx-auto bg-white">

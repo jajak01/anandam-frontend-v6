@@ -24,7 +24,7 @@ export default defineConfig({
         target: 'https://api-marketplace.anandamcomputer.com',
         changeOrigin: true,
         secure: false,
-        rewrite: (path) => path.replace(/^\/api-marketplace/, ''),
+        rewrite: (path: string) => path.replace(/^\/api-marketplace/, ''),
         headers: {
           'Origin': 'https://api-marketplace.anandamcomputer.com',
         },
@@ -33,11 +33,36 @@ export default defineConfig({
         target: 'https://api.anandamcomputer.com',
         changeOrigin: true,
         secure: false,
-        rewrite: (path) => path.replace(/^\/api-tracking/, ''),
+        rewrite: (path: string) => path.replace(/^\/api-tracking/, ''),
         headers: {
           'Origin': 'https://api.anandamcomputer.com',
         },
       },
     },
   },
-});
+  preview: {
+    host: '0.0.0.0',
+    port: 4173,
+    strictPort: true,
+    proxy: {
+      '/api-marketplace': {
+        target: 'https://api-marketplace.anandamcomputer.com',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path: string) => path.replace(/^\/api-marketplace/, ''),
+        headers: {
+          'Origin': 'https://api-marketplace.anandamcomputer.com',
+        },
+      },
+      '/api-tracking': {
+        target: 'https://api.anandamcomputer.com',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path: string) => path.replace(/^\/api-tracking/, ''),
+        headers: {
+          'Origin': 'https://api.anandamcomputer.com',
+        },
+      },
+    },
+  },
+})
