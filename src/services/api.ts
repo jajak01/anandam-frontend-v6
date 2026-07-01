@@ -1,4 +1,5 @@
 import axios from "axios";
+import { initIdleTimer } from "./idleTimer";
 
 const isDev = import.meta.env.DEV;
 
@@ -122,9 +123,7 @@ api.interceptors.response.use(
         localStorage.setItem("token", newAccessToken);
         localStorage.setItem("refresh_token", newRefreshToken);
 
-        import("./idleTimer").then(({ initIdleTimer }) => {
-          initIdleTimer();
-        });
+        initIdleTimer();
 
         isRefreshing = false;
         processQueue(null, newAccessToken);

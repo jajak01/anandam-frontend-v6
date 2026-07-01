@@ -3,24 +3,27 @@ import { useEffect, lazy, Suspense } from "react"
 import AOS from "aos"
 import "aos/dist/aos.css"
 
+import { initDeferredScripts } from "./utils/deferredScripts";
+import LandingPage from "./pages/landing_page/LandingPage";
 import PublicLayout from "./components/PublicLayout";
 import ScrollToTop from "./components/ScrollToTop";
 import ScrollToTopButton from "./components/CornerActions";
 import PageLoader from "./components/PageLoader";
 import { SocketProvider } from "./contexts/SocketContext";
 import { initIdleTimer } from "./services/idleTimer";
+import { checkLoginExpired } from "./services/userLoginCache";
+import { logoutUser } from "./services/userAuthService";
 import { GlobalImportProvider } from "./components/admin/NotificationUpdateUpload";
 import AdminProtectedRoute from "./components/AdminProtectedRoute";
 import UserProtectedRoute from "./components/UserProtectedRoute";
 import UserLayout from "./components/UserLayout";
 import AdminLayout from "./components/admin/AdminLayout";
 
-// Lazy Loaded Pages
+// Lazy Loaded Pages (non-critical pages loaded on demand)
 const LoginPage = lazy(() => import("./pages/admin_panel/LoginPage"));
 const Dashboard = lazy(() => import("./pages/admin_panel/Dashboard"));
 const CategoryPage = lazy(() => import("./pages/admin_panel/CategoryPage"));
 const AdminProductPage = lazy(() => import("./pages/admin_panel/ProductPage"));
-const LandingPage = lazy(() => import("./pages/landing_page/LandingPage"));
 const ProductUpdatePage = lazy(() => import("./pages/admin_panel/ProductUpdatePage"));
 const ProductUploadPage = lazy(() => import("./pages/admin_panel/ProductUploadPage"));
 const AdminPricelistPage = lazy(() => import("./pages/admin_panel/PricelistPage"));
@@ -37,7 +40,7 @@ const SearchResultPage = lazy(() => import("./pages/landing_page/SearchResultPag
 const BrandSection = lazy(() => import("./pages/admin_panel/BrandPage"));
 const PCBuilderPage = lazy(() => import("./pages/landing_page/PCBuilderPage"));
 const PCBuilderPreviewPage = lazy(() => import("./pages/landing_page/PCBuilderPreviewPage"));
-const PublicPricelistPage = lazy(() => import("./pages/landing_page/PricelistPage"));
+// const PublicPricelistPage = lazy(() => import("./pages/landing_page/PricelistPage"));
 const ServerBusyPage = lazy(() => import("./pages/ServerBusyPage"));
 const TiktokPage = lazy(() => import("./pages/admin_panel/TiktokPage"));
 const ProfilePage = lazy(() => import("./pages/landing_page/User/ProfilePage"));
@@ -73,7 +76,7 @@ function AppRoutes() {
           <Route path="/search" element={<SearchResultPage />} />
           <Route path="/pc-builder" element={<PCBuilderPage />} />
           <Route path="/pc-builder/preview" element={<PCBuilderPreviewPage />} />
-          <Route path="/price-list" element={<PublicPricelistPage />} />
+          {/* <Route path="/price-list" element={<PublicPricelistPage />} /> */}
           <Route path="/cart" element={<CartPage />} />
           <Route path="/promo/:id" element={<PromoBannerPage />} />
           <Route path="/track/servis/:token?" element={<ServiceTrackingPage />} />
@@ -128,12 +131,30 @@ function AppContent() {
   const location = useLocation();
 
   useEffect(() => {
-    AOS.init({
-      duration: 800,
-      once: true,
-      offset: 80
-    })
+    // Initialize deferred third-party scripts after page load
+    initDeferredScripts();
+
+    // Defer AOS init to not block first paint
+    const timer = setTimeout(() => {
+      AOS.init({
+        duration: 800,
+        once: true,
+        offset: 80
+      })
+    }, 100);
+    return () => clearTimeout(timer);
   }, [])
+
+  useEffect(() => {
+    // ================= CEK EXPIRED LOGIN USER (7 HARI) =================
+    const userToken = localStorage.getItem("user_token");
+    if (userToken && checkLoginExpired()) {
+      console.warn("Sesi login user sudah lebih dari 7 hari. Logout otomatis...");
+      logoutUser().finally(() => {
+        window.location.reload();
+      });
+    }
+  }, []);
 
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
@@ -158,7 +179,6 @@ function AppContent() {
 
   return (
     <>
-      <PageLoader/>
       <ScrollToTop/>
       <ScrollToTopButton/>
       <AppRoutes/>

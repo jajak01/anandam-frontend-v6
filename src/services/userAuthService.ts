@@ -1,11 +1,12 @@
 import userApi from "./userApi";
 import api from "./api"; // Admin API (pakai token admin)
+import { saveLoginTimestamp, clearLoginTimestamp } from "./userLoginCache";
 
 export interface RegisterDto {
   full_name: string;
   email: string;
   password: string;
-  phone_number?: string;
+  phone_number: string;
 }
 
 export interface LoginDto {
@@ -134,6 +135,7 @@ export const loginUser = async (data: LoginDto): Promise<AuthResponse> => {
   localStorage.setItem("user_token", result.access_token);
   localStorage.setItem("user_refresh_token", result.refresh_token);
   localStorage.setItem("user_data", JSON.stringify(result.user));
+  saveLoginTimestamp();
 
   return result;
 };
@@ -148,6 +150,7 @@ export const logoutUser = async () => {
     localStorage.removeItem("user_token");
     localStorage.removeItem("user_refresh_token");
     localStorage.removeItem("user_data");
+    clearLoginTimestamp();
   }
 };
 
@@ -159,6 +162,7 @@ export const googleLoginUser = async (data: GoogleLoginDto): Promise<AuthRespons
   localStorage.setItem("user_token", result.access_token);
   localStorage.setItem("user_refresh_token", result.refresh_token);
   localStorage.setItem("user_data", JSON.stringify(result.user));
+  saveLoginTimestamp();
 
   return result;
 };

@@ -47,7 +47,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ rooms, activeRoomId, onSelect
       <div className="flex-1 overflow-y-auto custom-scrollbar">
         {rooms.length > 0 ? (
           rooms.map((room) => {
-            const displayName = isAdmin ? `User ${room.buyer_id.substring(0,6)}` : 'Anandam Official';
+            const displayName = isAdmin ? (room.buyer_name || `User ${room.buyer_id.substring(0,6)}`) : 'Anandam Official';
             const unreadCount = isAdmin ? room.unread_count_admin : room.unread_count_buyer;
             const time = room.last_message_at 
               ? new Date(room.last_message_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 

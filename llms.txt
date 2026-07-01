@@ -1,0 +1,40 @@
+# Anandam ID
+
+Anandam ID adalah toko komputer dan laptop terpercaya di Yogyakarta, menyediakan berbagai macam Laptop, PC Rakitan, Komponen Komputer, Printer, Monitor, dan Aksesoris terlengkap dengan harga kompetitif.
+
+## Halaman Utama
+
+- [Beranda](https://anandamid.com/) - Halaman utama dengan banner promo, kategori produk, dan produk unggulan
+- [Produk Katalog](https://anandamid.com/products) - Jelajahi semua produk komputer dan laptop
+- [Kategori Produk](https://anandamid.com/product-categories) - Lihat produk berdasarkan kategori
+- [Rakit PC](https://anandamid.com/pc-builder) - Konfigurasi dan rakit PC sesuai kebutuhan
+- [Promo](https://anandamid.com/promo/:id) - Lihat promo dan diskon spesial
+- [Lacak Servis](https://anandamid.com/track/servis) - Lacak status perbaikan/service
+
+## Informasi Perusahaan
+
+- [Tentang Kami](https://anandamid.com/company-profile) - Profil dan informasi perusahaan
+- [Syarat & Ketentuan](https://anandamid.com/terms) - Syarat dan ketentuan penggunaan
+- [Sertifikat PKL](https://anandamid.com/certificate) - Verifikasi sertifikat PKL
+
+## Akun Pengguna
+
+- [Login / Daftar](https://anandamid.com/) - Masuk atau buat akun baru
+- [Profil Saya](https://anandamid.com/user/account/profile) - Kelola profil pengguna
+- [Pesanan Saya](https://anandamid.com/user/purchase) - Riwayat pesanan
+- [Alamat](https://anandamid.com/user/account/addresses) - Kelola alamat pengiriman
+- [Keranjang](https://anandamid.com/cart) - Lihat keranjang belanja
+
+## Kontak
+
+- **Sales**: +62 8122-8134-747
+- **Customer Service**: +62 8595-0544-597
+- **Email**: sales@anandam.id
+- **Alamat**: Jl. Affandi No.17, Soropadan, Condongcatur, Kec. Depok, Kabupaten Sleman, Daerah Istimewa Yogyakarta 55283
+
+## Media Sosial
+
+- [TikTok](https://www.tiktok.com/@anandamidstore)
+- [Facebook](https://www.facebook.com/Anandamcomputer/)
+- [Instagram](https://www.instagram.com/anandam.id/)
+- [YouTube](https://www.youtube.com/@AnandamIDstore)

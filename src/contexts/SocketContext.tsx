@@ -16,6 +16,7 @@ const SocketContext = createContext<SocketContextProps>({
 export const useSocket = () => useContext(SocketContext);
 
 import { useLocation } from 'react-router-dom';
+import { chatService } from '../services/chatService';
 
 export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -26,7 +27,6 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const refreshUnreadCount = async (currentSocket?: Socket | null) => {
     const activeSocket = currentSocket || socket;
     try {
-      const { chatService } = await import('../services/chatService');
       const res = await chatService.getRooms();
       const rooms = res.data;
       const total = rooms.reduce((acc: number, room: any) => {

@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom"; 
 import { getCompatibility, getProducts } from "../../services/productService";
 import { checkoutPCBuilder } from "../../services/orderSevice";
@@ -6,7 +7,8 @@ import type { Product } from "../../types/product";
 import Breadcrumb from "../../components/Breadcrumb";
 import Swal from "sweetalert2";
 import AuthModal from "../../components/Navbar/AuthModal";
-import { ChevronRight, Eye } from "lucide-react";
+import { ChevronRight, Eye, CheckCircle, AlertCircle } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 // Fungsi helper pembentuk URL gambar agar seragam dengan ProductCard
 const getProductImageSrc = (p: any) => {
@@ -19,139 +21,256 @@ const getProductImageSrc = (p: any) => {
     return imagePath.startsWith("http") ? imagePath : `${import.meta.env.VITE_API_BASE}${imagePath}`;
 };
 
-// ================= KOMPONEN ROW (DENGAN FOTO PRODUK) =================
-const Row = ({ label, value, onChange, options, price, qtyKey, qty, setQty }: any) => {
-    const [isOpen, setIsOpen] = useState(false);
+const getItemStock = (p: any) => {
+    if (!p) return 0;
+    if (p.variants && Array.isArray(p.variants)) {
+        return p.variants.reduce((total: number, v: any) => total + Number(v.stock || 0), 0);
+    }
+    return Number(p.stock ?? p.stok ?? 0);
+};
+
+const getItemPrice = (p: any) => {
+    if (!p) return 0;
+    if (p.final_price) return Number(p.final_price);
+    const v = p.variants?.[0];
+    if (v) return Number(v.price_normal || 0) - Number(v.price_discount || 0);
+    return Number(p.price_normal || 0) - Number(p.price_discount || 0);
+};
+
+interface ComponentRowProps {
+    label: string;
+    value: any;
+    onChange: (val: any) => void;
+    options: Product[];
+    price: number;
+    qtyKey: string;
+    qty: { [key: string]: number | string };
+    setQty: (fn: any) => void;
+    isRequired?: boolean;
+    icon?: LucideIcon;
+}
+
+const ProductDropdown = ({ isOpen, onClose, label, value, options, onChange, qtyKey, setQty, triggerRef }: {
+    isOpen: boolean;
+    onClose: () => void;
+    label: string;
+    value: any;
+    options: Product[];
+    onChange: (val: any) => void;
+    qtyKey: string;
+    setQty: (fn: any) => void;
+    triggerRef: React.RefObject<HTMLDivElement | null>;
+}) => {
     const [search, setSearch] = useState("");
+    const [pos, setPos] = useState({ top: 0, left: 0, width: 300 });
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-                setIsOpen(false);
+        const calcPos = () => {
+            if (!triggerRef.current) return;
+            const rect = triggerRef.current.getBoundingClientRect();
+            const spaceBelow = window.innerHeight - rect.bottom;
+            const dropdownH = 420;
+            if (spaceBelow < dropdownH && rect.top > dropdownH) {
+                setPos({ top: rect.top - 10, left: rect.left, width: rect.width });
+            } else {
+                setPos({ top: rect.bottom + 4, left: rect.left, width: rect.width });
             }
         };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
+        calcPos();
+        window.addEventListener('scroll', calcPos, true);
+        window.addEventListener('resize', calcPos);
+        return () => {
+            window.removeEventListener('scroll', calcPos, true);
+            window.removeEventListener('resize', calcPos);
+        };
+    }, [isOpen, triggerRef]);
 
-    const getItemStock = (p: any) => {
-        if (!p) return 0;
-        if (p.variants && Array.isArray(p.variants)) {
-            return p.variants.reduce((total: number, v: any) => total + Number(v.stock || 0), 0);
-        }
-        return Number(p.stock ?? p.stok ?? 0);
-    };
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node) &&
+                triggerRef.current && !triggerRef.current.contains(e.target as Node)) {
+                onClose();
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [onClose, triggerRef]);
 
-    const filteredOptions = options?.filter((p: Product) =>
-        p.name.toLowerCase().includes(search.toLowerCase()) && (getItemStock(p) > 0)
-    ) || [];
 
-    return (
-        <div className="flex flex-col md:grid md:grid-cols-12 gap-3 md:gap-4 items-start md:items-center py-4 border-b border-gray-50 last:border-0">
-            {/* LABEL KATEGORI */}
-            <div className="md:col-span-3 text-[13px] font-bold text-gray-400 uppercase tracking-tight w-full md:pr-2">
-                {label}
+    if (!isOpen) return null;
+
+    const filtered = options.filter(p =>
+        p.name.toLowerCase().includes(search.toLowerCase()) && getItemStock(p) > 0
+    );
+
+    return createPortal(
+        <div
+            ref={dropdownRef}
+            style={{
+                position: 'fixed',
+                top: pos.top,
+                left: pos.left,
+                width: pos.width,
+                zIndex: 999999,
+            }}
+            className="bg-white border border-gray-200 rounded-xl shadow-2xl shadow-black/20 flex flex-col animate-fadeIn overflow-hidden"
+        >
+            <div className="p-2 border-b border-gray-100 bg-gray-50">
+                <input
+                    type="text"
+                    autoFocus
+                    className="w-full text-sm p-2 bg-white border border-gray-200 rounded-lg outline-none focus:border-primary"
+                    placeholder={`Cari ${label}...`}
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    onClick={(e) => e.stopPropagation()}
+                />
             </div>
 
-            {/* AREA SELEKTOR DROPDOWN */}
-            <div className={`md:col-span-5 w-full relative ${isOpen ? 'z-50' : 'z-10'}`} ref={dropdownRef}>
+            <div className="max-h-72 overflow-y-auto custom-scrollbar">
                 <div
-                    className="w-full flex items-center gap-3 border border-gray-200 p-2 rounded-xl text-sm bg-white hover:border-primary hover:shadow-sm transition-all cursor-pointer outline-none min-h-[52px]"
-                    onClick={() => setIsOpen(!isOpen)}
+                    className="px-3 py-2.5 text-[10px] font-extrabold uppercase tracking-widest text-red-500 hover:bg-red-50 cursor-pointer border-b border-gray-50"
+                    onClick={() => { onChange(null); onClose(); }}
                 >
-                    {/* 🟢 FOTO BARANG YANG SEDANG TERPILIH */}
-                    <div className="w-10 h-10 rounded-lg bg-gray-50 border border-gray-100 flex-shrink-0 flex items-center justify-center p-1 overflow-hidden">
-                        <img 
-                            src={getProductImageSrc(value)} 
-                            alt="Preview" 
-                            className={`w-full h-full object-contain ${!value ? "opacity-30" : ""}`}
-                        />
-                    </div>
-
-                    <span className={`flex-1 pr-2 line-clamp-2 font-medium ${value ? "text-gray-800" : "text-gray-400"}`}>
-                        {value ? `${value.name} (Stok ${getItemStock(value)})` : `Pilih ${label}`}
-                    </span>
-                    <svg className={`w-4 h-4 text-gray-400 transition-transform flex-shrink-0 mr-1 ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                    -- Kosongkan Pilihan --
                 </div>
 
-                {/* MENU PILIHAN DROPDOWN */}
-                {isOpen && (
-                    <div className="absolute top-full left-0 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden flex flex-col animate-fadeIn max-w-[100vw] sm:max-w-full">
-                        <div className="p-2 border-b border-gray-100 bg-gray-50 sticky top-0">
-                            <input
-                                type="text"
-                                autoFocus
-                                className="w-full text-sm p-2 bg-white border border-gray-200 rounded-lg outline-none focus:border-primary"
-                                placeholder={`Cari ${label}...`}
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                onClick={(e) => e.stopPropagation()}
-                            />
-                        </div>
-
-                        <div className="max-h-60 overflow-y-auto scrollbar-hide">
+                {filtered.length > 0 ? (
+                    filtered.map((p) => {
+                        const totalStock = getItemStock(p);
+                        const isSelected = value?.id === p.id;
+                        return (
                             <div
-                                className="px-3 py-2.5 text-[10px] font-extrabold uppercase tracking-widest text-red-500 hover:bg-red-50 cursor-pointer border-b border-gray-50"
-                                onClick={() => { onChange(null); setIsOpen(false); setSearch(""); }}
+                                key={p.id}
+                                className={`px-3 py-2 flex gap-3 items-center text-sm cursor-pointer transition-all border-b border-gray-50/50 last:border-0 ${
+                                    isSelected
+                                        ? 'bg-green-50 text-green-800 font-bold border-l-4 border-l-green-500'
+                                        : 'text-gray-700 hover:bg-gray-50 hover:pl-4'
+                                }`}
+                                onClick={() => {
+                                    onChange(p);
+                                    onClose();
+                                    setQty((prev: any) => ({ ...prev, [qtyKey]: 1 }));
+                                }}
                             >
-                                -- Kosongkan Pilihan --
-                            </div>
-                            
-                            {filteredOptions.length > 0 ? (
-                                filteredOptions.map((p: Product) => {
-                                    const totalStock = getItemStock(p);
-                                    return (
-                                        <div
-                                            key={p.id}
-                                            className={`px-3 py-2 flex gap-3 items-center text-sm cursor-pointer transition-colors border-b border-gray-50/50 last:border-0 ${value?.id === p.id ? 'bg-primary/5 text-primary font-bold' : 'text-gray-700 hover:bg-gray-50'}`}
-                                            onClick={() => {
-                                                onChange(p);
-                                                setIsOpen(false);
-                                                setSearch("");
-                                                setQty((prev: any) => ({ ...prev, [qtyKey]: 1 }));
-                                            }}
-                                        >
-                                            {/* 🟢 MINI FOTO PADA DAFTAR PENCARIAN */}
-                                            <div className="w-9 h-9 bg-white border border-gray-100 rounded-md flex-shrink-0 p-1 flex items-center justify-center overflow-hidden">
-                                                <img src={getProductImageSrc(p)} alt={p.name} className="w-full h-full object-contain" />
-                                            </div>
-
-                                            <span className="flex-1 mr-2 line-clamp-2 leading-snug">{p.name}</span>
-                                            <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 whitespace-nowrap flex-shrink-0">
-                                                STOK {totalStock}
-                                            </span>
-                                        </div>
-                                    );
-                                })
-                            ) : (
-                                <div className="px-3 py-6 text-xs text-center text-gray-400 font-bold uppercase tracking-widest">
-                                    {search ? "Hasil tidak ditemukan" : "Stok Kosong"}
+                                <div className="w-9 h-9 bg-white border border-gray-100 rounded-md flex-shrink-0 p-1 flex items-center justify-center overflow-hidden">
+                                    <img
+                                        src={getProductImageSrc(p)}
+                                        alt={p.name}
+                                        className="w-full h-full object-contain"
+                                        onError={(e) => { (e.target as HTMLImageElement).src = '/icon-anandam.svg'; }}
+                                    />
                                 </div>
-                            )}
-                        </div>
+                                <span className="flex-1 mr-2 line-clamp-2 leading-snug">{p.name}</span>
+                                {isSelected && <CheckCircle size={14} className="text-green-500 shrink-0" />}
+                                <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 whitespace-nowrap flex-shrink-0">
+                                    STOK {totalStock}
+                                </span>
+                            </div>
+                        );
+                    })
+                ) : (
+                    <div className="px-3 py-6 text-xs text-center text-gray-400 font-bold uppercase tracking-widest">
+                        {search ? "Hasil tidak ditemukan" : "Stok Kosong"}
                     </div>
                 )}
             </div>
+        </div>,
+        document.body
+    );
+};
+
+const Row = ({ label, value, onChange, options, price, qtyKey, qty, setQty, isRequired }: ComponentRowProps) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const triggerRef = useRef<HTMLDivElement>(null);
+
+    const isFilled = value !== null && value !== undefined;
+
+    return (
+        <div className={`flex flex-col md:grid md:grid-cols-12 gap-3 md:gap-4 items-start md:items-center py-4 border-b border-gray-50 last:border-0 transition-all duration-200 ${isFilled ? 'opacity-100' : 'opacity-90'}`}>
+            {/* LABEL KATEGORI */}
+            <div className="md:col-span-3 flex items-center gap-1.5 w-full md:pr-2">
+                <span className={`text-[13px] font-bold uppercase tracking-tight transition-colors duration-200 ${isFilled ? 'text-gray-800' : 'text-gray-400'}`}>
+                    {label}
+                </span>
+                {isRequired && (
+                    <span className="text-[9px] bg-red-500 text-white px-1.5 py-0.5 rounded font-bold uppercase tracking-wider shrink-0">
+                        Wajib
+                    </span>
+                )}
+                {isFilled && (
+                    <CheckCircle size={12} className="text-green-500 shrink-0 ml-0.5" />
+                )}
+            </div>
+
+            {/* AREA SELEKTOR DROPDOWN */}
+            <div className="md:col-span-5 w-full relative" ref={triggerRef}>
+                <div
+                    className={`w-full flex items-center gap-3 border-2 p-2 rounded-xl text-sm bg-white transition-all cursor-pointer outline-none min-h-[52px] ${
+                        isFilled 
+                            ? 'border-green-300 bg-green-50/30 hover:border-green-400 hover:shadow-sm' 
+                            : isRequired 
+                                ? 'border-red-200 bg-red-50/20 hover:border-primary hover:shadow-sm' 
+                                : 'border-gray-200 hover:border-primary hover:shadow-sm'
+                    }`}
+                    onClick={() => setIsOpen(!isOpen)}
+                >
+                    <div className={`w-10 h-10 rounded-lg border flex-shrink-0 flex items-center justify-center p-1 overflow-hidden transition-all ${
+                        isFilled ? 'bg-white border-green-200' : 'bg-gray-50 border-gray-100'
+                    }`}>
+                        <img 
+                            src={getProductImageSrc(value)} 
+                            alt="Preview" 
+                            className={`w-full h-full object-contain ${!isFilled ? "opacity-30" : ""}`}
+                            onError={(e) => { (e.target as HTMLImageElement).src = '/icon-anandam.svg'; }}
+                        />
+                    </div>
+
+                    <span className={`flex-1 pr-2 line-clamp-2 font-medium ${
+                        isFilled ? "text-gray-800 font-semibold" : "text-gray-400"
+                    }`}>
+                        {isFilled ? `${value.name} (Stok ${getItemStock(value)})` : `Pilih ${label}`}
+                    </span>
+                    {isFilled && !isOpen && (
+                        <span className="text-[10px] font-bold text-green-600 bg-green-100 px-2 py-0.5 rounded-full mr-1">
+                            Terisi
+                        </span>
+                    )}
+                    <svg className={`w-4 h-4 text-gray-400 transition-transform flex-shrink-0 mr-1 ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+
+                <ProductDropdown
+                    isOpen={isOpen}
+                    onClose={() => setIsOpen(false)}
+                    label={label}
+                    value={value}
+                    options={options}
+                    onChange={onChange}
+                    qtyKey={qtyKey}
+                    setQty={setQty}
+                    triggerRef={triggerRef}
+                />
+            </div>
 
             {/* KUANTITAS (QTY) & ESTIMASI HARGA ROW */}
-            <div className="flex items-center justify-between w-full md:col-span-4 gap-4 relative z-0 md:pl-2">
+            <div className={`flex items-center justify-between w-full md:col-span-4 gap-4 relative md:pl-2 transition-all ${isFilled ? '' : 'opacity-50'}`}>
                 <div className="flex items-center gap-3 md:justify-center md:w-full">
                     <span className="text-[10px] text-gray-400 font-extrabold uppercase md:hidden tracking-widest">Qty</span>
                     <input
                         type="number"
                         min={1}
-                        max={value ? getItemStock(value) : 99} 
-                        className="w-16 border border-gray-200 p-2 rounded-lg text-sm text-center bg-white outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-300"
+                        max={isFilled ? getItemStock(value) : 99} 
+                        className={`w-16 border p-2 rounded-lg text-sm text-center bg-white outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-300 ${
+                            isFilled ? 'border-green-200 text-gray-800' : 'border-gray-200'
+                        }`}
                         value={qty[qtyKey] === "" ? "" : qty[qtyKey]}
-                        disabled={!value}
+                        disabled={!isFilled}
                         onChange={(e) => {
                             const val = e.target.value;
                             let numVal = val === "" ? "" : Number(val);
-                            const maxStock = value ? getItemStock(value) : 99;
-
+                            const maxStock = isFilled ? getItemStock(value) : 99;
                             if (typeof numVal === 'number' && numVal > maxStock) numVal = maxStock;
-
                             setQty((prev: any) => ({
                                 ...prev,
                                 [qtyKey]: numVal === "" ? "" : Math.max(1, numVal as number)
@@ -159,13 +278,36 @@ const Row = ({ label, value, onChange, options, price, qtyKey, qty, setQty }: an
                         }}
                     />
                 </div>
-                <div className="text-right text-sm font-extrabold text-gray-800 md:w-full whitespace-nowrap">
-                    Rp {price.toLocaleString("id-ID")}
-                </div>
+                {isFilled && (
+                    <div className="text-right text-sm font-extrabold text-green-600 md:w-full whitespace-nowrap transition-all">
+                        Rp {price.toLocaleString("id-ID")}
+                    </div>
+                )}
             </div>
         </div>
     );
 };
+
+interface SectionCardProps {
+    title: string;
+    badge?: string;
+    badgeColor?: string;
+    children: React.ReactNode;
+}
+
+const SectionCard = ({ title, badge, badgeColor = "bg-primary", children }: SectionCardProps) => (
+    <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200">
+        <div className="flex justify-between items-center mb-6">
+            <h2 className="text-[11px] font-bold uppercase tracking-widest text-gray-400">{title}</h2>
+            {badge && (
+                <span className={`text-[9px] ${badgeColor} text-white px-2 py-0.5 rounded-md font-bold uppercase tracking-widest`}>
+                    {badge}
+                </span>
+            )}
+        </div>
+        {children}
+    </div>
+);
 
 // ================= MAIN PC BUILDER PAGE COMPONENT =================
 export default function PCBuilderPage() {
@@ -200,11 +342,9 @@ export default function PCBuilderPage() {
     });
 
     const [constraints, setConstraints] = useState<any>(null);
-    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         const fetchCoreParts = async () => {
-            setLoading(true);
             try {
                 const res = await getCompatibility({
                     processor_id: selectedCPU?.id,
@@ -222,8 +362,6 @@ export default function PCBuilderPage() {
                 setConstraints(res.active_constraints);
             } catch (err) {
                 console.error(err);
-            } finally { 
-                setLoading(false); 
             }
         };
 
@@ -275,6 +413,14 @@ export default function PCBuilderPage() {
         setQty(initialQty);
     };
 
+    const selectedCount = [
+        selectedCPU, selectedMobo, selectedRAM,
+        selectedVGA1, selectedVGA2, selectedPSU,
+        selectedCoolerCPU, selectedCoolerFan1, selectedCoolerFan2, selectedCoolerFan3,
+        selectedCasing, selectedSSD1, selectedSSD2, selectedHDD1, selectedHDD2,
+        selectedMonitor1, selectedMonitor2, selectedMonitor3, selectedOS
+    ].filter(Boolean).length;
+
     const handlePreview = () => {
         const parts = [
             { label: "Processor", item: selectedCPU, key: "cpu" },
@@ -298,7 +444,6 @@ export default function PCBuilderPage() {
         .map(p => ({ 
             ...p, 
             qty: Number(qty[p.key]) || 1,
-            // 🟢 Ikut kirimkan URL gambar produk yang valid ke halaman preview
             image: getProductImageSrc(p.item)
         }));
 
@@ -336,24 +481,24 @@ export default function PCBuilderPage() {
         }
 
         const lines = parts.map(p =>
-            `• ${p.label}: ${p.item!.name} (x${qty[p.key]}) - Rp ${getPrice(p.item, p.key).toLocaleString("id-ID")}`
+            `• ${p.label}: ${p.item!.name} (x${qty[p.key]}) - Rp ${getItemPrice(p.item).toLocaleString("id-ID")}`
         ).join("\n");
 
         const message = 
     `Halo Admin Anandam,
 
-    Saya ingin konsultasi rakitan PC berikut:
+Saya ingin konsultasi rakitan PC berikut:
 
-    ${lines}
+${lines}
 
-    💰 *Estimasi Total:* Rp ${grandTotal.toLocaleString("id-ID")}
+💰 *Estimasi Total:* Rp ${grandTotal.toLocaleString("id-ID")}
 
-    Mohon bantuannya 🙏`;
+Mohon bantuannya 🙏`;
 
         window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, "_blank");
     };
 
-    const getPrice = (p: Product | null, key: string) => (p?.final_price || 0) * (Number(qty[key]) || 1);
+    const getPrice = (p: Product | null, key: string) => (p ? getItemPrice(p) : 0) * (Number(qty[key]) || 1);
 
     const grandTotal = 
         getPrice(selectedCPU, "cpu") + getPrice(selectedMobo, "mobo") + getPrice(selectedRAM, "ram") +
@@ -432,7 +577,14 @@ export default function PCBuilderPage() {
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                     <div>
                         <h1 className="text-xl font-bold text-gray-900 uppercase tracking-tight">PC Builder</h1>
-                        <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-1">Konfigurasi PC Sesuai Kebutuhan</p>
+                        <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-1">
+                            Konfigurasi PC Sesuai Kebutuhan
+                            {selectedCount > 0 && (
+                                <span className="ml-2 text-green-500 font-bold">
+                                    • {selectedCount} komponen terpilih
+                                </span>
+                            )}
+                        </p>
                     </div>
                     <button onClick={handleReset} className="text-[11px] font-bold text-red-500 uppercase tracking-widest bg-red-50 px-4 py-2 rounded-xl hover:bg-red-100 transition-all">
                         Reset Konfigurasi
@@ -441,44 +593,37 @@ export default function PCBuilderPage() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                     <div className="lg:col-span-3 space-y-6">
-                        {/* Section 1 */}
-                        <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
-                            <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-[11px] font-bold uppercase tracking-widest text-gray-400">Komponen Utama</h2>
-                                <span className="text-[9px] bg-primary text-white px-2 py-0.5 rounded-md font-bold uppercase tracking-widest">Wajib</span>
-                            </div>
-                            <Row label="Processor" value={selectedCPU} onChange={setSelectedCPU} options={filterValidProducts(list.processors, "cpu")} price={getPrice(selectedCPU, "cpu")} qtyKey="cpu" qty={qty} setQty={setQty} />
-                            <Row label="Motherboard" value={selectedMobo} onChange={setSelectedMobo} options={filterValidProducts(list.motherboards, "mobo")} price={getPrice(selectedMobo, "mobo")} qtyKey="mobo" qty={qty} setQty={setQty} />
-                            <Row label="RAM" value={selectedRAM} onChange={setSelectedRAM} options={filterValidProducts(list.rams, "ram")} price={getPrice(selectedRAM, "ram")} qtyKey="ram" qty={qty} setQty={setQty} />
-                        </div>
+                        {/* Section 1 - Komponen Utama (Wajib) */}
+                        <SectionCard title="Komponen Utama" badge="Wajib" badgeColor="bg-red-500">
+                            <Row label="Processor" value={selectedCPU} onChange={setSelectedCPU} options={filterValidProducts(list.processors, "cpu")} price={getPrice(selectedCPU, "cpu")} qtyKey="cpu" qty={qty} setQty={setQty} isRequired={true} />
+                            <Row label="Motherboard" value={selectedMobo} onChange={setSelectedMobo} options={filterValidProducts(list.motherboards, "mobo")} price={getPrice(selectedMobo, "mobo")} qtyKey="mobo" qty={qty} setQty={setQty} isRequired={true} />
+                            <Row label="RAM" value={selectedRAM} onChange={setSelectedRAM} options={filterValidProducts(list.rams, "ram")} price={getPrice(selectedRAM, "ram")} qtyKey="ram" qty={qty} setQty={setQty} isRequired={true} />
+                        </SectionCard>
 
                         {/* Section 2 */}
-                        <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
-                            <h2 className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-6">Graphics & Power</h2>
+                        <SectionCard title="Graphics & Power">
                             <Row label="VGA Utama" value={selectedVGA1} onChange={setSelectedVGA1} options={list.vgas} price={getPrice(selectedVGA1, "vga1")} qtyKey="vga1" qty={qty} setQty={setQty} />
                             <Row label="VGA Tambahan" value={selectedVGA2} onChange={setSelectedVGA2} options={list.vgas} price={getPrice(selectedVGA2, "vga2")} qtyKey="vga2" qty={qty} setQty={setQty} />
                             <Row label="Power Supply" value={selectedPSU} onChange={setSelectedPSU} options={list.psus} price={getPrice(selectedPSU, "psu")} qtyKey="psu" qty={qty} setQty={setQty} />
                             <Row label="Casing PC" value={selectedCasing} onChange={setSelectedCasing} options={list.casings} price={getPrice(selectedCasing, "casing")} qtyKey="casing" qty={qty} setQty={setQty} />
-                        </div>
+                        </SectionCard>
 
                         {/* Section 3 */}
-                        <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
-                            <h2 className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-6">Cooling System</h2>
+                        <SectionCard title="Cooling System">
                             <Row label="Cooler CPU" value={selectedCoolerCPU} onChange={setSelectedCoolerCPU} options={list.coolerCPU} price={getPrice(selectedCoolerCPU, "coolerCPU")} qtyKey="coolerCPU" qty={qty} setQty={setQty} />
                             <Row label="Cooler Fan 1" value={selectedCoolerFan1} onChange={setSelectedCoolerFan1} options={list.coolerFan} price={getPrice(selectedCoolerFan1, "fan1")} qtyKey="fan1" qty={qty} setQty={setQty} />
                             <Row label="Cooler Fan 2" value={selectedCoolerFan2} onChange={setSelectedCoolerFan2} options={list.coolerFan} price={getPrice(selectedCoolerFan2, "fan2")} qtyKey="fan2" qty={qty} setQty={setQty} />
                             <Row label="Cooler Fan 3" value={selectedCoolerFan3} onChange={setSelectedCoolerFan3} options={list.coolerFan} price={getPrice(selectedCoolerFan3, "fan3")} qtyKey="fan3" qty={qty} setQty={setQty} />
-                        </div>
+                        </SectionCard>
 
                         {/* Section 4 */}
-                        <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
-                            <h2 className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-6">Storage & Display</h2>
+                        <SectionCard title="Storage & Display">
                             <Row label="SSD Utama" value={selectedSSD1} onChange={setSelectedSSD1} options={list.ssds} price={getPrice(selectedSSD1, "ssd1")} qtyKey="ssd1" qty={qty} setQty={setQty} />
                             <Row label="SSD Tambahan" value={selectedSSD2} onChange={setSelectedSSD2} options={list.ssds} price={getPrice(selectedSSD2, "ssd2")} qtyKey="ssd2" qty={qty} setQty={setQty} />
                             <Row label="HDD Utama" value={selectedHDD1} onChange={setSelectedHDD1} options={list.hdds} price={getPrice(selectedHDD1, "hdd1")} qtyKey="hdd1" qty={qty} setQty={setQty} />
                             <Row label="Monitor LED" value={selectedMonitor1} onChange={setSelectedMonitor1} options={list.monitors} price={getPrice(selectedMonitor1, "monitor1")} qtyKey="monitor1" qty={qty} setQty={setQty} />
                             <Row label="Operating System" value={selectedOS} onChange={setSelectedOS} options={list.oss} price={getPrice(selectedOS, "os")} qtyKey="os" qty={qty} setQty={setQty} />
-                        </div>
+                        </SectionCard>
                     </div>
 
                     {/* SUMMARY CARD */}
@@ -487,6 +632,16 @@ export default function PCBuilderPage() {
                             <h2 className="text-sm font-bold text-gray-900 uppercase tracking-widest mb-6 border-b pb-4">Estimasi Biaya</h2>
                             
                             <div className="space-y-4 mb-8">
+                                <div className="flex justify-between items-center text-[11px] font-bold uppercase tracking-widest">
+                                    <span className="text-gray-400">Komponen Terisi</span>
+                                    <span className="text-green-600">{selectedCount}/19</span>
+                                </div>
+                                <div className="w-full bg-gray-100 rounded-full h-1.5">
+                                    <div 
+                                        className="bg-green-500 h-1.5 rounded-full transition-all duration-500"
+                                        style={{ width: `${(selectedCount / 19) * 100}%` }}
+                                    />
+                                </div>
                                 <div className="flex justify-between items-center text-[11px] font-bold uppercase tracking-widest">
                                     <span className="text-gray-400">Socket</span>
                                     <span className={isCoreComplete ? "text-primary" : "text-gray-400"}>{constraints?.socket?.toUpperCase() || "--"}</span>
@@ -530,7 +685,14 @@ export default function PCBuilderPage() {
                                 Checkout Pesanan
                                 <ChevronRight size={16} className="transition-transform group-hover:translate-x-1" />
                             </button>
-                            {!isCoreComplete && <p className="text-[9px] text-red-400 font-bold uppercase mt-3 text-center tracking-tighter">* Lengkapi Komponen Utama Dahulu</p>}
+                            {!isCoreComplete && (
+                                <div className="mt-3 p-3 bg-red-50 border border-red-100 rounded-lg flex items-start gap-2">
+                                    <AlertCircle size={14} className="text-red-500 shrink-0 mt-0.5" />
+                                    <p className="text-[10px] text-red-600 font-bold leading-relaxed">
+                                        Lengkapi Komponen Utama (Processor, Motherboard & RAM) sebelum checkout
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

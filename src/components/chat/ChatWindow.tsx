@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Paperclip, Image as ImageIcon, Send, Smile, Info, MoreHorizontal, X, ShoppingBag, ArrowLeft, Check, CheckCheck } from 'lucide-react';
+import { Paperclip, Image as ImageIcon, Send, Smile, Info, MoreHorizontal, X, ShoppingBag, ArrowLeft, Check, CheckCheck, Package } from 'lucide-react';
 import MessageBubble from './MessageBubble';
+import ProductSearchPanel from './ProductSearchPanel';
 import { chatService } from '../../services/chatService';
 import { useSocket } from '../../contexts/SocketContext';
 import { useLocation } from 'react-router-dom';
@@ -30,7 +31,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ activeRoomId, rooms = [], onBac
   const [attachedProductId, setAttachedProductId] = useState<string | null>(location.state?.product_id || null);
   const [attachedProductName, setAttachedProductName] = useState<string | null>(location.state?.product_name || null);
 
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false); // Tambahkan state ini
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showProductSearch, setShowProductSearch] = useState(false);
 
   useEffect(() => {
     const handleAttach = (e: any) => {
@@ -65,6 +67,18 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ activeRoomId, rooms = [], onBac
       .catch(err => console.error(err))
       .finally(() => setIsLoading(false));
   }, [activeRoomId]);
+
+  // Join room via socket saat activeRoomId berubah (penting untuk admin)
+  useEffect(() => {
+    if (!socket || !activeRoomId) return;
+    
+    socket.emit('join_room', { roomId: activeRoomId });
+    
+    // Cleanup: leave room saat komponen unmount atau room berubah
+    return () => {
+      socket.emit('leave_room', { roomId: activeRoomId });
+    };
+  }, [socket, activeRoomId]);
 
   useEffect(() => {
     if (!socket) return;
@@ -209,8 +223,18 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ activeRoomId, rooms = [], onBac
       </div>
 
       {/* Input Area */}
-      <div className="bg-white px-4 py-3 md:px-6 md:py-4 border-t border-gray-200">
+      <div className="bg-white px-4 py-3 md:px-6 md:py-4 border-t border-gray-200 relative">
         
+        {/* ProductSearchPanel - POSITIONED DI SINI agar bisa full-width */}
+        <ProductSearchPanel 
+          isOpen={showProductSearch}
+          onClose={() => setShowProductSearch(false)}
+          onSelectProduct={(productId, productName) => {
+            setAttachedProductId(productId);
+            setAttachedProductName(productName);
+          }}
+        />
+
         {/* 1. AREA LAMPIRAN PRODUK (Dipisah dari input) */}
         {attachedProductId && (
           <div className="flex items-center gap-3 bg-blue-50 border border-blue-100 p-2.5 rounded-lg mb-3 w-max max-w-full relative group">
@@ -231,7 +255,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ activeRoomId, rooms = [], onBac
         )}
 
         {/* 2. AREA INPUT PESAN (Main Container) */}
-        <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-full p-1 pl-3 focus-within:bg-white focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all shadow-inner w-full relative">          
+        <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-full p-1 pl-3 focus-within:bg-white focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all shadow-inner w-full">          
           {/* EMOJI PICKER CONTAINER */}
           <div className="relative">
             <button 
@@ -264,8 +288,12 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ activeRoomId, rooms = [], onBac
             className="flex-1 min-w-0 bg-transparent border-none focus:ring-0 text-[13px] md:text-sm px-1 text-gray-700 placeholder-gray-400 outline-none"
           />
           
-          <button className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors shrink-0">
-            <Paperclip size={18} />
+          <button 
+            type="button"
+            onClick={() => setShowProductSearch(!showProductSearch)}
+            className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors shrink-0"
+          >
+            <Package size={18} />
           </button>
           
           <button 

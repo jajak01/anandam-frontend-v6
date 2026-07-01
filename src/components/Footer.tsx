@@ -1,6 +1,7 @@
 import { Facebook, Instagram, Youtube, Copy } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { lazyLoadGoogleMaps } from "../utils/deferredScripts";
 
 type CopyNumberProps = {
   label: string;
@@ -43,7 +44,60 @@ function CopyNumber({ label, number }: CopyNumberProps) {
   );
 }
 
+const MAP_EMBED_URL = "https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d15813.121542448534!2d110.38987475128177!3d-7.760059611725515!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x51aab3a4de9990f%3A0x6122cbf0b82f64d9!2sAnandam.id%20(Toko%20Notebook%20%26%20Komputer%20Yogyakarta)!5e0!3m2!1sid!2sid!4v1773457167405!5m2!1sid!2sid";
+
 export default function Footer() {
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
+
+  useEffect(() => {
+    // Lazy load Google Maps when the container becomes visible
+    const container = mapContainerRef.current;
+    if (!container) return;
+
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting && !mapLoaded) {
+              setMapLoaded(true);
+              const iframe = document.createElement('iframe');
+              iframe.src = MAP_EMBED_URL;
+              iframe.title = "Lokasi Toko Anandam ID";
+              iframe.width = '100%';
+              iframe.height = '100%';
+              iframe.style.border = '0';
+              iframe.loading = 'lazy';
+              iframe.allowFullscreen = true;
+              iframe.referrerPolicy = 'no-referrer-when-downgrade';
+              container.appendChild(iframe);
+              observer.unobserve(container);
+            }
+          });
+        },
+        { rootMargin: '200px' }
+      );
+      observer.observe(container);
+      return () => observer.disconnect();
+    } else {
+      // Fallback: load after 3 seconds
+      const timer = setTimeout(() => {
+        setMapLoaded(true);
+        const iframe = document.createElement('iframe');
+        iframe.src = MAP_EMBED_URL;
+        iframe.title = "Lokasi Toko Anandam ID";
+        iframe.width = '100%';
+        iframe.height = '100%';
+        iframe.style.border = '0';
+        iframe.loading = 'lazy';
+        iframe.allowFullscreen = true;
+        iframe.referrerPolicy = 'no-referrer-when-downgrade';
+        container.appendChild(iframe);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [mapLoaded]);
+
   return (
     <footer className="w-full bg-black text-gray-300">
       <div className="max-w-7xl 2xl:max-w-screen-2xl mx-auto px-8 md:px-16 py-16">
@@ -74,6 +128,7 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-2 bg-black border border-gray-600 rounded-full text-white hover:bg-gray-800 inline-flex"
+                  aria-label="Ikuti kami di TikTok"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -90,10 +145,10 @@ export default function Footer() {
                   href="https://www.facebook.com/Anandamcomputer/"
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label="Ikuti kami di Facebook"
+                  className="p-2 border border-gray-600 rounded-full hover:bg-gray-800 cursor-pointer inline-flex"
                 >
-                  <div className="p-2 border border-gray-600 rounded-full hover:bg-gray-800 cursor-pointer">
-                    <Facebook size={16} />
-                  </div>
+                  <Facebook size={16} />
                 </a>
 
                 {/* Instagram */}
@@ -101,10 +156,10 @@ export default function Footer() {
                   href="https://www.instagram.com/anandam.id/?hl=en"
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label="Ikuti kami di Instagram"
+                  className="p-2 border border-gray-600 rounded-full hover:bg-gray-800 inline-flex"
                 >
-                  <div className="p-2 border border-gray-600 rounded-full hover:bg-gray-800">
-                      <Instagram size={16} />
-                  </div>
+                  <Instagram size={16} />
                 </a>
 
                 {/* Youtube */}
@@ -112,10 +167,10 @@ export default function Footer() {
                   href="https://www.youtube.com/@AnandamIDstore"
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label="Subscribe di YouTube"
+                  className="p-2 border border-gray-600 rounded-full hover:bg-gray-800 inline-flex"
                 >  
-                  <div className="p-2 border border-gray-600 rounded-full hover:bg-gray-800">
-                      <Youtube size={16} />
-                  </div>
+                  <Youtube size={16} />
                 </a>
 
             </div>
@@ -200,16 +255,16 @@ export default function Footer() {
                 Lokasi Kami
               </h3>
 
-              <div className="w-full h-[140px] md:h-[180px] overflow-hidden border border-gray-700 rounded-md">
-                <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d15813.121542448534!2d110.38987475128177!3d-7.760059611725515!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x51aab3a4de9990f%3A0x6122cbf0b82f64d9!2sAnandam.id%20(Toko%20Notebook%20%26%20Komputer%20Yogyakarta)!5e0!3m2!1sid!2sid!4v1773457167405!5m2!1sid!2sid"
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                />
+              <div
+                ref={mapContainerRef}
+                className="w-full h-[140px] md:h-[180px] overflow-hidden border border-gray-700 rounded-md bg-gray-800 flex items-center justify-center"
+              >
+                {!mapLoaded && (
+                  <div className="text-gray-500 text-xs text-center px-4">
+                    <div className="w-6 h-6 border-2 border-gray-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                    Memuat peta...
+                  </div>
+                )}
               </div>
 
               <p className="text-sm text-gray-300 mt-3">

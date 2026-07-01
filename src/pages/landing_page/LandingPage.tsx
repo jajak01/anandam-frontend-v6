@@ -4,6 +4,8 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { getCategories } from "../../services/adminCategoryService";
 import { getBanners } from "../../services/bannerService";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import OptimizedImage from "../../components/OptimizedImage";
+import LayananEksklusifSection from "../../components/LayananEksklusifSection";
 import ProductCard from "../../components/ProductCard";
 import LoadMoreButton from "../../components/LoadMoreButton";
 import CategoryProductSection from "../../components/CategoryProductSection";
@@ -556,7 +558,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-blue-50">
+    <main className="min-h-screen bg-blue-50">
       <Helmet>
         <title>Anandam Computer - Toko Komputer Terlengkap di Yogyakarta</title>
         <meta name="description" content="Anandam Computer menyediakan berbagai macam Laptop, PC Rakitan, Komponen Komputer, dan Aksesoris terlengkap di Yogyakarta." />
@@ -564,32 +566,26 @@ export default function LandingPage() {
       </Helmet>
 
       {/* ================= HERO BANNER ================= */}
-      {/* Diubah overflow-x-hidden agar sisa sayap tidak membuat halaman bisa di-scroll ke kanan */}
-      <section className="w-full relative overflow-hidden bg-gray-50">
+      <section className="w-full relative overflow-hidden" style={{ background: 'linear-gradient(to bottom, #f9fafb 0%, transparent 50%, transparent 100%)' }}>
         
-        {/* 1. BACKGROUND BLUR (FULL WIDTH SCREEN) 
-            Berubah mengikuti banner yang aktif (zoomin & blur)
-        */}
+        {/* 1. BACKGROUND BLUR (FULL WIDTH SCREEN) — berubah mengikuti banner yang aktif */}
         {activeBanner && (
           <div 
             className="absolute inset-0 z-0 pointer-events-none"
             style={{
-              // Trik Masking CSS: Membuat bagian bawah background memudar perlahan (fade out)
-              WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
-              maskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)'
+              WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 60%, transparent 100%)',
+              maskImage: 'linear-gradient(to bottom, black 0%, black 60%, transparent 100%)'
             }}
           >
             <img
               src={getImageUrl(activeBanner.image_url)}
-              className="w-full h-full object-cover scale-110 blur-[40px] opacity-60 transition-all duration-700 ease-in-out"
+              className="w-full h-full object-cover scale-105 blur-[10px] opacity-80 transition-all duration-700 ease-in-out"
               alt="Background Blur"
             />
-            {/* Overlay transparan agar konten di depan tetap jelas */}
-            <div className="absolute inset-0 bg-white/30 backdrop-blur-[2px]"></div>
           </div>
         )}
 
-        {/* 2. CONTAINER KONTEN (DENGAN WHITE SPACE px-4 md:px-12) */}
+        {/* 2. CONTAINER KONTEN */}
         <div className="relative z-10 py-6 md:py-8 max-w-7xl 2xl:max-w-screen-2xl mx-auto px-4 md:px-12 w-full">
           
           <style>{`
@@ -660,13 +656,12 @@ export default function LandingPage() {
                                 }
                               `}
                             >
-                              {!heroImagesLoaded[`${banner.id}-${i}`] && (
-                                <div className="absolute inset-0 bg-gray-200 animate-pulse rounded-2xl md:rounded-3xl" />
-                              )}
-                              <img
+                              <OptimizedImage
                                 src={getImageUrl(banner.image_url)}
-                                className={`w-full h-full object-cover pointer-events-none transition-opacity duration-300 ${heroImagesLoaded[`${banner.id}-${i}`] ? "opacity-100" : "opacity-0"}`}
                                 alt={banner.title || "Hero Banner"}
+                                className="w-full h-full object-cover pointer-events-none"
+                                aspectRatio="21/9"
+                                isPriority={i === 1 && heroBanners.length > 0}
                                 draggable={false}
                                 onLoad={() => setHeroImagesLoaded(prev => ({ ...prev, [`${banner.id}-${i}`]: true }))}
                               />
@@ -762,23 +757,21 @@ export default function LandingPage() {
                         }}
                     >
                         {displayPromoBanners.map((banner, i) => (
-                            <div
-                                key={`${banner.id}-${i}`}
-                                onClick={() => navigate(`/promo/${banner.id || 'special'}`)}
-                                // 🟢 PERUBAHAN UTAMA: Hapus aspect-[8/1], gunakan w-full flex-shrink-0
-                                className="w-full flex-shrink-0 cursor-pointer hover:opacity-95 transition-opacity flex justify-center items-center relative min-h-[50px]"
-                            >
-                                {!promoImagesLoaded[`${banner.id}-${i}`] && (
-                                    <div className="absolute inset-0 bg-gray-200 animate-pulse rounded-xl" />
-                                )}
-                                <img
-                                    src={getImageUrl(banner.image_url)}
-                                    className={`w-full h-auto object-contain select-none pointer-events-none block transition-opacity duration-300 ${promoImagesLoaded[`${banner.id}-${i}`] ? "opacity-100" : "opacity-0"}`}
-                                    alt="Banner Promo"
-                                    draggable={false}
-                                    onLoad={() => setPromoImagesLoaded(prev => ({ ...prev, [`${banner.id}-${i}`]: true }))}
-                                />
-                            </div>
+                                <div
+                                    key={`${banner.id}-${i}`}
+                                    onClick={() => navigate(`/promo/${banner.id || 'special'}`)}
+                                    // 🔵 PERBAIKAN: Container mengatur aspect ratio 8:1, OptimizedImage tidak perlu aspectRatio prop
+                                    className="w-full flex-shrink-0 cursor-pointer hover:opacity-95 transition-opacity relative aspect-[8/1]"
+                                >
+                                    <OptimizedImage
+                                        src={getImageUrl(banner.image_url)}
+                                        alt="Banner Promo"
+                                        className="w-full h-full object-cover select-none pointer-events-none block"
+                                        isPriority={false}
+                                        draggable={false}
+                                        onLoad={() => setPromoImagesLoaded(prev => ({ ...prev, [`${banner.id}-${i}`]: true }))}
+                                    />
+                                </div>
                         ))}
                     </div>
 
@@ -855,6 +848,8 @@ export default function LandingPage() {
         </div>
       </section>
 
+      <LayananEksklusifSection />
+
       {/* Modal Tiktok */}
       {showLiveModal && isLive && (
         <div
@@ -885,6 +880,6 @@ export default function LandingPage() {
           </a>
         </div>
       )}
-    </div>
+    </main>
   );
 }

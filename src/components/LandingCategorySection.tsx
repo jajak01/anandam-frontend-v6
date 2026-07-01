@@ -28,6 +28,8 @@ export default function LandingCategorySection({
 
   return (
     <section className="relative w-full bg-white"> 
+      {/* Gradient blur overlay at the top for smooth transition from hero */}
+    <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-b from-transparent via-white/40 to-white backdrop-blur-sm pointer-events-none z-10"></div>
       <div className="relative z-10 max-w-7xl 2xl:max-w-screen-2xl mx-auto px-4 sm:px-8 lg:px-0 py-4 sm:py-6">
         
         {/* CONTAINER UTAMA */}

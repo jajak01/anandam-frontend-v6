@@ -68,17 +68,22 @@ export const ChatPopup = () => {
     }
   }, [location.state]);
 
-  if (!token) return null; // Sembunyikan widget jika belum login
+  const handleChatClick = () => {
+    if (!token) {
+      // Jika belum login, trigger modal login dari Navbar via custom event
+      window.dispatchEvent(new CustomEvent('openAuthModal', { detail: { mode: 'login' } }));
+      return;
+    }
+    setIsOpen(!isOpen);
+    if (!isOpen && activeRoomId) {
+      chatService.markAsReadBuyer(activeRoomId).then(() => refreshUnreadCount()).catch(console.error);
+    }
+  };
 
   return (
     <>
       <button
-        onClick={() => {
-          setIsOpen(!isOpen);
-          if (!isOpen && activeRoomId) {
-            chatService.markAsReadBuyer(activeRoomId).then(() => refreshUnreadCount()).catch(console.error);
-          }
-        }}
+        onClick={handleChatClick}
         className="fixed bottom-[96px] md:bottom-8 right-6 md:right-8 p-[14px] bg-blue-600 text-white rounded-full shadow-xl hover:bg-blue-700 hover:scale-105 transition-all z-[9999] flex items-center justify-center"
       >
         {isOpen ? <X size={26} /> : <MessageCircle size={26} />}

@@ -38,7 +38,7 @@ const STATIC_ROUTES = [
   '/search',
   '/pc-builder',
   '/pc-builder/preview',
-  '/price-list',
+  // '/price-list',
   '/cart',
 ]
 

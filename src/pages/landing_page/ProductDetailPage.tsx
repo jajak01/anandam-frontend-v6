@@ -869,7 +869,7 @@ export default function ProductDetailPage() {
                  <h3 className="text-base lg:text-lg font-bold text-gray-900">Specifications</h3>
                  <div className="space-y-2">
                     {product.specifications?.map((spec, index) => (
-                      <p key={index}>• {spec.trim()}</p>
+                      <p key={index}>{spec.trim()}</p>
                     ))}
                  </div>
               </div>

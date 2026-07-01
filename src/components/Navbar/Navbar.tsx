@@ -140,10 +140,16 @@ export default function Navbar() {
     loadUserData();
     window.addEventListener("storage", loadUserData);
     window.addEventListener("userDataUpdated", loadUserData);
+    const handleOpenAuthModal = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      openAuth(customEvent.detail?.mode || "login");
+    };
+    window.addEventListener("openAuthModal", handleOpenAuthModal);
     
     return () => {
       window.removeEventListener("storage", loadUserData);
       window.removeEventListener("userDataUpdated", loadUserData);
+      window.removeEventListener("openAuthModal", handleOpenAuthModal);
     };
   }, []);
 
@@ -177,7 +183,9 @@ export default function Navbar() {
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
   useEffect(() => {
@@ -309,7 +317,7 @@ export default function Navbar() {
             
             {/* Left Area (Brand & Category) - Ditambahkan flex-shrink-0 agar logo tidak tergencet */}
             <div className="flex items-center gap-4 lg:gap-6 flex-shrink-0">
-              <Link to="/" className="flex-shrink-0">
+              <Link to="/" className="flex-shrink-0" aria-label="Beranda">
                 <img src="/anandam-logo-blue.svg" alt="Anandam Logo" className="h-8 sm:h-8 lg:h-9 w-auto object-contain" />
               </Link>
 
@@ -345,7 +353,7 @@ export default function Navbar() {
               <div className="relative flex justify-center group">
                 
                 {/* Trigger Button */}
-                <button className="relative cursor-pointer text-gray-600 group-hover:text-blue-600 transition-colors p-1 flex items-center justify-center">
+                <button className="relative cursor-pointer text-gray-600 group-hover:text-blue-600 transition-colors p-1 flex items-center justify-center" aria-label="Buka contact center">
                   <MessageSquare size={20} strokeWidth={2} />
                 </button>
 
